@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGold } from "@/contexts/GoldContext";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { ChevronDown, ChevronUp, Trash2, Edit } from "lucide-react";
 import { GoldRecord } from "@/types/gold";
 
@@ -70,7 +70,7 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                       </h3>
                       {record.purchaseDate && (
                         <p className="text-sm text-muted-foreground">
-                          Purchased on {record.purchaseDate.toLocaleDateString()}
+                          {formatDate(record.purchaseDate)}
                         </p>
                       )}
                       {record.shopName && (

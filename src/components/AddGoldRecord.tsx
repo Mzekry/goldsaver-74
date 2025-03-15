@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   const isEditing = !!editRecord;
   
   const [type, setType] = useState<GoldType>(editRecord?.type || "Pound");
-  const [karat, setKarat] = useState<21 | 24>(editRecord?.karat || 21);
+  const [karat, setKarat] = useState<21 | 24>(editRecord?.karat || (type === "Pound" ? 21 : 24));
   const [quantity, setQuantity] = useState<string>(editRecord?.quantity.toString() || "");
   const [purchasePrice, setPurchasePrice] = useState<string>(editRecord?.purchasePrice.toString() || "");
   const [purchaseDate, setPurchaseDate] = useState<string>(
@@ -38,6 +38,34 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   );
   const [cashback, setCashback] = useState<string>(editRecord?.cashback?.toString() || "");
   const [notes, setNotes] = useState<string>(editRecord?.notes || "");
+
+  // Update karat when type changes
+  useEffect(() => {
+    if (type === "Pound") {
+      setKarat(21);
+    } else if (type === "Sabikah") {
+      setKarat(24);
+    }
+  }, [type]);
+
+  // Update form when editRecord changes
+  useEffect(() => {
+    if (editRecord) {
+      setType(editRecord.type);
+      setKarat(editRecord.karat);
+      setQuantity(editRecord.quantity.toString());
+      setPurchasePrice(editRecord.purchasePrice.toString());
+      setPurchaseDate(editRecord.purchaseDate 
+        ? editRecord.purchaseDate.toISOString().split('T')[0]
+        : "");
+      setShopName(editRecord.shopName || "");
+      setCompany(editRecord.company || "");
+      setProductionCost(editRecord.productionCost?.toString() || "");
+      setCashback(editRecord.cashback?.toString() || "");
+      setNotes(editRecord.notes || "");
+      setOpen(true);
+    }
+  }, [editRecord]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +99,7 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button 
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full"
+              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl"
               size="icon"
             >
               <Plus className="h-6 w-6" />
@@ -80,6 +108,7 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Add New Gold Record</DialogTitle>
+              <DialogDescription>Add details about your gold purchase below.</DialogDescription>
             </DialogHeader>
             <GoldRecordForm
               type={type}
@@ -117,6 +146,7 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Edit Gold Record</DialogTitle>
+              <DialogDescription>Modify the details of your gold record.</DialogDescription>
             </DialogHeader>
             <GoldRecordForm
               type={type}
@@ -210,25 +240,28 @@ const GoldRecordForm = ({
           <div className="space-y-2">
             <Label>Gold Type</Label>
             <RadioGroup 
-              defaultValue={type} 
+              value={type} 
               onValueChange={(value) => setType(value as GoldType)}
               className="flex space-x-4"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="Pound" id="gold-type-pound" />
-                <Label htmlFor="gold-type-pound">Pound</Label>
+                <Label htmlFor="gold-type-pound">Pound (21K)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="Sabikah" id="gold-type-sabikah" />
-                <Label htmlFor="gold-type-sabikah">Sabikah</Label>
+                <Label htmlFor="gold-type-sabikah">Sabikah (24K)</Label>
               </div>
             </RadioGroup>
           </div>
           
           <div className="space-y-2">
             <Label>Karat</Label>
+            <div className="text-sm text-muted-foreground mb-2">
+              {type === "Pound" ? "Default: 21K" : "Default: 24K"}
+            </div>
             <RadioGroup 
-              defaultValue={karat.toString()} 
+              value={karat.toString()} 
               onValueChange={(value) => setKarat(parseInt(value) as 21 | 24)}
               className="flex space-x-4"
             >
@@ -248,6 +281,7 @@ const GoldRecordForm = ({
             <Input
               id="quantity"
               type="number"
+              inputMode="decimal"
               step="0.01"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
@@ -261,6 +295,7 @@ const GoldRecordForm = ({
             <Input
               id="purchasePrice"
               type="number"
+              inputMode="decimal"
               step="0.01"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
@@ -306,6 +341,7 @@ const GoldRecordForm = ({
             <Input
               id="productionCost"
               type="number"
+              inputMode="decimal"
               step="0.01"
               value={productionCost}
               onChange={(e) => setProductionCost(e.target.value)}
@@ -318,6 +354,7 @@ const GoldRecordForm = ({
             <Input
               id="cashback"
               type="number"
+              inputMode="decimal"
               step="0.01"
               value={cashback}
               onChange={(e) => setCashback(e.target.value)}
@@ -339,7 +376,7 @@ const GoldRecordForm = ({
       </Tabs>
       
       <div className="flex justify-end">
-        <Button type="submit">
+        <Button type="submit" className="w-full sm:w-auto">
           {isEditing ? "Update Record" : "Add Record"}
         </Button>
       </div>

@@ -9,10 +9,12 @@ interface GoldContextType {
   goldPrices: GoldPrice;
   isLoading: boolean;
   error: string | null;
+  language: 'en' | 'ar';
   addRecord: (record: Omit<GoldRecord, "id" | "createdAt" | "updatedAt">) => void;
   updateRecord: (id: string, record: Partial<GoldRecord>) => void;
   deleteRecord: (id: string) => void;
   refreshPrices: () => Promise<void>;
+  switchLanguage: () => void;
   totalPurchaseValue: number;
   currentValue: number;
   isZakatEligible: boolean;
@@ -33,11 +35,13 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [goldPrices, setGoldPrices] = useState<GoldPrice>(defaultGoldPrices);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<'en' | 'ar'>('en');
 
   // Load records from localStorage on initial load
   useEffect(() => {
     const savedRecords = localStorage.getItem("goldRecords");
     const savedPrices = localStorage.getItem("goldPrices");
+    const savedLanguage = localStorage.getItem("language");
     
     if (savedRecords) {
       try {
@@ -67,6 +71,10 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error("Error parsing saved prices:", err);
       }
     }
+    
+    if (savedLanguage) {
+      setLanguage(savedLanguage as 'en' | 'ar');
+    }
   }, []);
 
   // Save records to localStorage whenever they change
@@ -81,11 +89,19 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("goldPrices", JSON.stringify(goldPrices));
   }, [goldPrices]);
 
+  // Save language to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("language", language);
+  }, [language]);
+
   // Set up auto-refresh of gold prices (every 30 minutes)
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       refreshPrices();
     }, 30 * 60 * 1000);
+
+    // Initial refresh
+    refreshPrices();
 
     return () => clearInterval(refreshInterval);
   }, []);
@@ -127,23 +143,33 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // In a real app, this would fetch from an API. For now, we'll simulate it
+  const switchLanguage = () => {
+    setLanguage((prevLang) => (prevLang === 'en' ? 'ar' : 'en'));
+    toast({ 
+      title: "Language Changed",
+      description: language === 'en' ? "تم تغيير اللغة إلى العربية" : "Language changed to English",
+    });
+  };
+
+  // In a real app, this would fetch from an external API
   const refreshPrices = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Simulate API call with random price variations
-      const variation = Math.random() * 100 - 50; // Random between -50 and +50
+      // Attempt to fetch real gold prices from gold-era.com
+      // This would be better implemented as a server-side API
       
-      // In a real app, fetch prices from an API
-      // const response = await fetch('https://api.goldprice.org/...');
-      // const data = await response.json();
+      // For demo purposes, we'll simulate gold prices close to actual Egyptian markets
+      // In a real application, you would implement server-side scraping of gold-era.com
+      
+      const k21Price = 3600 + Math.floor(Math.random() * 200); // Approximate 21K price in Egypt
+      const k24Price = Math.round(k21Price * 1.15); // 24K is typically ~15% more than 21K
       
       setTimeout(() => {
         const newPrices: GoldPrice = {
-          k21: Math.round(defaultGoldPrices.k21 + variation),
-          k24: Math.round(defaultGoldPrices.k24 + variation * 1.15),
+          k21: k21Price,
+          k24: k24Price,
           lastUpdated: new Date(),
         };
         
@@ -192,10 +218,12 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
         goldPrices,
         isLoading,
         error,
+        language,
         addRecord,
         updateRecord,
         deleteRecord,
         refreshPrices,
+        switchLanguage,
         totalPurchaseValue,
         currentValue,
         isZakatEligible,
