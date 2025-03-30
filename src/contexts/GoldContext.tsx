@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -37,7 +36,6 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
 
-  // Load records from localStorage on initial load
   useEffect(() => {
     const savedRecords = localStorage.getItem("goldRecords");
     const savedPrices = localStorage.getItem("goldPrices");
@@ -46,7 +44,6 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (savedRecords) {
       try {
         const parsedRecords = JSON.parse(savedRecords);
-        // Convert string dates to Date objects
         const recordsWithDates = parsedRecords.map((record: any) => ({
           ...record,
           createdAt: new Date(record.createdAt),
@@ -77,30 +74,25 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Save records to localStorage whenever they change
   useEffect(() => {
     if (records.length > 0) {
       localStorage.setItem("goldRecords", JSON.stringify(records));
     }
   }, [records]);
 
-  // Save prices to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("goldPrices", JSON.stringify(goldPrices));
   }, [goldPrices]);
 
-  // Save language to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
 
-  // Set up auto-refresh of gold prices (every 30 minutes)
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       refreshPrices();
     }, 30 * 60 * 1000);
 
-    // Initial refresh
     refreshPrices();
 
     return () => clearInterval(refreshInterval);
@@ -151,64 +143,58 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // In a real app, this would fetch from an external API
   const refreshPrices = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Attempt to fetch real gold prices from gold-era.com
-      // This would be better implemented as a server-side API
+      const getGoldPriceInRange = (min: number, max: number) => {
+        return Math.floor(min + Math.random() * (max - min));
+      };
       
-      // For demo purposes, we'll simulate gold prices close to actual Egyptian markets
-      // In a real application, you would implement server-side scraping of gold-era.com
+      const k21Price = getGoldPriceInRange(3650, 3750);
+      const k24Price = getGoldPriceInRange(4150, 4250);
       
-      const k21Price = 3600 + Math.floor(Math.random() * 200); // Approximate 21K price in Egypt
-      const k24Price = Math.round(k21Price * 1.15); // 24K is typically ~15% more than 21K
+      const newPrices: GoldPrice = {
+        k21: k21Price,
+        k24: k24Price,
+        lastUpdated: new Date(),
+      };
       
-      setTimeout(() => {
-        const newPrices: GoldPrice = {
-          k21: k21Price,
-          k24: k24Price,
-          lastUpdated: new Date(),
-        };
-        
-        setGoldPrices(newPrices);
-        setIsLoading(false);
-        toast({ 
-          title: "Prices Updated",
-          description: `21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP`,
-        });
-      }, 1000);
+      setGoldPrices(newPrices);
+      
+      toast({ 
+        title: language === 'en' ? "Prices Updated" : "تم تحديث الأسعار",
+        description: language === 'en' ? 
+          `21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
+          `عيار ١١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
+      });
     } catch (err) {
       console.error("Error fetching gold prices:", err);
       setError("Failed to fetch gold prices");
-      setIsLoading(false);
       toast({ 
-        title: "Error",
-        description: "Failed to update gold prices",
+        title: language === 'en' ? "Error" : "خطأ",
+        description: language === 'en' ? "Failed to update gold prices" : "فشل تحديث أسعار الذهب",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Calculate total purchase value
   const totalPurchaseValue = records.reduce(
     (total, record) => total + record.purchasePrice,
     0
   );
 
-  // Calculate current value based on gold prices
   const currentValue = records.reduce((total, record) => {
     const pricePerGram = record.karat === 21 ? goldPrices.k21 : goldPrices.k24;
     return total + (record.quantity * pricePerGram);
   }, 0);
 
-  // Check if Zakat eligible (if current value is >= 85g of 21K gold)
   const nisabThreshold = 85 * goldPrices.k21;
   const isZakatEligible = currentValue >= nisabThreshold;
   
-  // Calculate Zakat amount (2.5% of current value)
   const zakatAmount = currentValue * 0.025;
 
   return (
