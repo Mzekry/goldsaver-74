@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -21,8 +22,8 @@ interface GoldContextType {
 }
 
 const defaultGoldPrices: GoldPrice = {
-  k21: 3300, // Default price for 21K gold per gram in EGP
-  k24: 3850, // Default price for 24K gold per gram in EGP
+  k21: 3700, // Default price for 21K gold per gram in EGP
+  k24: 4200, // Default price for 24K gold per gram in EGP
   lastUpdated: new Date(),
 };
 
@@ -148,6 +149,51 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     
     try {
+      // Using the Metals-API (a free gold price API)
+      const response = await fetch('https://api.metalpriceapi.com/v1/latest?api_key=18fc1e4f794c2bc5ec149d84fe2501a2&base=USD&currencies=XAU', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch gold prices');
+      }
+      
+      const data = await response.json();
+      
+      // XAU is the code for 1 troy ounce of gold (31.1035 grams)
+      const goldPricePerOunceUSD = 1 / data.rates.XAU;
+      const goldPricePerGramUSD = goldPricePerOunceUSD / 31.1035;
+      
+      // Convert to EGP (approximate exchange rate)
+      const usdToEgp = 48.5; // Approximate exchange rate
+      const goldPricePerGramEGP = goldPricePerGramUSD * usdToEgp;
+      
+      // 24K is pure gold, 21K is 21/24 = 87.5% pure
+      const k24Price = Math.round(goldPricePerGramEGP);
+      const k21Price = Math.round(k24Price * (21/24));
+      
+      const newPrices: GoldPrice = {
+        k21: k21Price,
+        k24: k24Price,
+        lastUpdated: new Date(),
+      };
+      
+      setGoldPrices(newPrices);
+      
+      toast({ 
+        title: language === 'en' ? "Prices Updated" : "تم تحديث الأسعار",
+        description: language === 'en' ? 
+          `21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
+          `عيار ٢١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
+      });
+    } catch (err) {
+      console.error("Error fetching gold prices:", err);
+      setError("Failed to fetch gold prices");
+      
+      // Fallback to simulated prices if API fails
       const getGoldPriceInRange = (min: number, max: number) => {
         return Math.floor(min + Math.random() * (max - min));
       };
@@ -164,17 +210,10 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGoldPrices(newPrices);
       
       toast({ 
-        title: language === 'en' ? "Prices Updated" : "تم تحديث الأسعار",
+        title: language === 'en' ? "Using Estimated Prices" : "استخدام أسعار تقديرية",
         description: language === 'en' ? 
-          `21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
-          `عيار ١١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
-      });
-    } catch (err) {
-      console.error("Error fetching gold prices:", err);
-      setError("Failed to fetch gold prices");
-      toast({ 
-        title: language === 'en' ? "Error" : "خطأ",
-        description: language === 'en' ? "Failed to update gold prices" : "فشل تحديث أسعار الذهب",
+          `Couldn't fetch prices. Using estimates: 21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
+          `تعذر جلب الأسعار. استخدام تقديرات: عيار ٢١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
         variant: "destructive"
       });
     } finally {
