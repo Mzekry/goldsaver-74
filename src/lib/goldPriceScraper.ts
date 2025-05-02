@@ -1,10 +1,12 @@
 
 /**
- * Gold Price Scraper Utility
- * This utility fetches gold prices from egypt.gold-era.com/gold-price/
+ * Gold Price Fetcher Utility
+ * This utility fetches gold prices from the gold.g.apised.com API
+ * with fallback to scraping from egypt.gold-era.com
  */
 
 import { GoldPrice } from "@/types/gold";
+import axios from "axios";
 
 interface ScrapedGoldPrices {
   k24: number;
@@ -12,9 +14,54 @@ interface ScrapedGoldPrices {
   timestamp: Date;
 }
 
+/**
+ * Primary method: Fetch gold prices from gold.g.apised.com API
+ */
+async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
+  try {
+    console.log("Fetching gold prices from gold.g.apised.com API...");
+    
+    const config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: 'https://gold.g.apised.com/v1/latest?metals=XAU,XAG,XPT,XPD&base_currency=EGP&currencies=EGP,EUR,KWD,GBP,USD&weight_unit=gram',
+      headers: { 
+        'x-api-key': 'sk_382C6f3E73d0e3B68c625776BA59cFfb8BcDb36ccD613126'
+      }
+    };
+
+    const response = await axios.request(config);
+    
+    // Parse the API response to extract 24K and 21K gold prices
+    if (response.data && response.data.success) {
+      console.log("Successfully fetched prices from gold.g.apised.com API");
+      
+      // XAU represents pure gold (24K)
+      const k24Price = Math.round(response.data.rates.XAU.EGP);
+      // 21K is 87.5% pure (21/24)
+      const k21Price = Math.round(k24Price * (21/24));
+      
+      return {
+        k24: k24Price,
+        k21: k21Price,
+        lastUpdated: new Date()
+      };
+    } else {
+      console.error("Invalid response format from gold.g.apised.com API");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching from gold.g.apised.com API:", error);
+    return null;
+  }
+}
+
+/**
+ * Fallback method: Scrape gold prices from egypt.gold-era.com
+ */
 export async function scrapeGoldPrices(): Promise<ScrapedGoldPrices | null> {
   try {
-    console.log("Fetching gold prices from egypt.gold-era.com...");
+    console.log("Falling back to scraping from egypt.gold-era.com...");
     
     // Fetch the HTML content from the website
     const response = await fetch("https://egypt.gold-era.com/gold-price/", {
@@ -56,9 +103,21 @@ export async function scrapeGoldPrices(): Promise<ScrapedGoldPrices | null> {
   }
 }
 
+/**
+ * Main function to get gold prices with a multi-level fallback mechanism
+ */
 export async function getGoldPrices(): Promise<GoldPrice> {
   try {
-    // Try to scrape prices first
+    // Try the API first (primary method)
+    console.log("Attempting to get gold prices...");
+    const apiPrices = await fetchPricesFromAPI();
+    
+    if (apiPrices) {
+      return apiPrices;
+    }
+    
+    // If API fails, try scraping (secondary method)
+    console.log("API failed, falling back to scraping...");
     const scrapedPrices = await scrapeGoldPrices();
     
     if (scrapedPrices) {
@@ -69,55 +128,20 @@ export async function getGoldPrices(): Promise<GoldPrice> {
       };
     }
     
-    // Fallback to API if scraping fails
-    console.log("Scraping failed, falling back to API...");
-    return await fetchPricesFromAPI();
-  } catch (error) {
-    console.error("Error getting gold prices:", error);
-    // Return fallback prices
+    // If both methods fail, return fallback prices
+    console.log("All methods failed, using fallback prices");
     return {
       k21: 3700,
       k24: 4200,
       lastUpdated: new Date()
     };
-  }
-}
-
-// Fallback API method
-async function fetchPricesFromAPI(): Promise<GoldPrice> {
-  try {
-    const response = await fetch('https://api.metalpriceapi.com/v1/latest?api_key=18fc1e4f794c2bc5ec149d84fe2501a2&base=USD&currencies=XAU', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch gold prices from API');
-    }
-    
-    const data = await response.json();
-    
-    // XAU is the code for 1 troy ounce of gold (31.1035 grams)
-    const goldPricePerOunceUSD = 1 / data.rates.XAU;
-    const goldPricePerGramUSD = goldPricePerOunceUSD / 31.1035;
-    
-    // Convert to EGP (approximate exchange rate)
-    const usdToEgp = 48.5; // Approximate exchange rate
-    const goldPricePerGramEGP = goldPricePerGramUSD * usdToEgp;
-    
-    // 24K is pure gold, 21K is 21/24 = 87.5% pure
-    const k24Price = Math.round(goldPricePerGramEGP);
-    const k21Price = Math.round(k24Price * (21/24));
-    
+  } catch (error) {
+    console.error("Error getting gold prices:", error);
+    // Return fallback prices in case of any unhandled errors
     return {
-      k21: k21Price,
-      k24: k24Price,
+      k21: 3700,
+      k24: 4200,
       lastUpdated: new Date()
     };
-  } catch (error) {
-    console.error("Error fetching from API:", error);
-    throw error;
   }
 }
