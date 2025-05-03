@@ -25,14 +25,7 @@ const Index = () => {
         <Header />
         
         <main className="flex-grow container mx-auto px-4 py-6 max-w-md">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-navy-dark text-center">{
-              // Using the translations directly here as we have access to useGold() only inside components
-              // The actual translation will be used in the GoldSummary component
-              "My Gold Wealth Analysis"
-            }</h2>
-            <div className="mt-1 h-1 w-24 bg-gold mx-auto rounded-full"></div>
-          </div>
+          {/* Removed the duplicated heading here */}
           
           <GoldSummary />
           <GoldRecordList onEditRecord={handleEditRecord} />
