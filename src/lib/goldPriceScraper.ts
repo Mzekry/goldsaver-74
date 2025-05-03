@@ -56,7 +56,6 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
     }
   } catch (error) {
     console.error("Error fetching from gold.g.apised.com API:", error);
-    console.error(response.data);
     return null;
   }
 }
