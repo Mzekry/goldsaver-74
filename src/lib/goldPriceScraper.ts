@@ -48,6 +48,9 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
       };
     } else {
       console.error("Invalid response format from gold.g.apised.com API");
+      console.clear();
+      console.error(response.data.metal_prices.XAU.price_24k);
+      console.error(response.data.status);
       console.error(response.data);
       return null;
     }
@@ -141,8 +144,8 @@ export async function getGoldPrices(): Promise<GoldPrice> {
     console.error("Error getting gold prices:", error);
     // Return fallback prices in case of any unhandled errors
     return {
-      k21: 3700,
-      k24: 4200,
+      k21: 00.00,
+      k24: 00.00,
       lastUpdated: new Date()
     };
   }
