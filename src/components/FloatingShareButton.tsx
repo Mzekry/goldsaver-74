@@ -33,6 +33,7 @@ export const FloatingShareButton = () => {
       onClick={handleShare}
       disabled={sharing}
       className="fixed left-4 bottom-4 rounded-full w-12 h-12 p-0 shadow-lg bg-gold hover:bg-gold/90 text-navy-dark flex items-center justify-center"
+      dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       <Share2 size={24} />
     </Button>

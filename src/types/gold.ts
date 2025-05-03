@@ -1,5 +1,5 @@
 
-export type GoldType = "Pound" | "Sabikah";
+export type GoldType = "Jewelry" | "Coin" | "Bar" | "Pound" | "Sabikah";
 
 export interface GoldRecord {
   id: string;

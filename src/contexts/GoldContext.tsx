@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -80,7 +81,7 @@ const translationsData = {
     from: "من",
     purchasePrice: "سعر الشراء",
     purchaseDate: "تاريخ الشراء",
-    currentValue: "القيمة الحالية",
+    currentValue: "القيمة الحالية", 
     addNewRecord: "إضافة سجل جديد",
     editRecord: "تعديل السجل",
     deleteRecord: "حذف السجل",
@@ -235,7 +236,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGoldPrices(newPrices);
       
       toast({ 
-        title: translations[language === 'en' ? "pricesUpdated" : "pricesUpdated"],
+        title: translations.pricesUpdated,
         description: translations.pricesUpdatedDesc.replace("{k21}", newPrices.k21.toString()).replace("{k24}", newPrices.k24.toString()),
       });
     } catch (err) {
@@ -259,7 +260,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGoldPrices(newPrices);
       
       toast({ 
-        title: translations[language === 'en' ? "usingEstimatedPrices" : "usingEstimatedPrices"],
+        title: translations.usingEstimatedPrices,
         description: translations.usingEstimatedPricesDesc.replace("{k21}", newPrices.k21.toString()).replace("{k24}", newPrices.k24.toString()),
         variant: "destructive"
       });
