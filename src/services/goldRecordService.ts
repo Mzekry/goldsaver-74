@@ -19,7 +19,7 @@ export async function getUserGoldRecords(): Promise<GoldRecord[]> {
   return (data || []).map((record): GoldRecord => ({
     id: record.id,
     type: record.type as any,
-    karat: record.karat,
+    karat: record.karat as 21 | 24, // Fix: Cast to 21 | 24 type
     quantity: record.quantity,
     purchasePrice: record.purchase_price,
     purchaseDate: record.purchase_date ? new Date(record.purchase_date) : undefined,
@@ -37,10 +37,18 @@ export async function getUserGoldRecords(): Promise<GoldRecord[]> {
 export async function addGoldRecord(record: Omit<GoldRecord, "id" | "createdAt" | "updatedAt">): Promise<GoldRecord> {
   const newId = uuidv4();
   
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+  
   const { data, error } = await supabase
     .from('gold_records')
     .insert({
       id: newId,
+      user_id: user.id,
       type: record.type,
       karat: record.karat,
       quantity: record.quantity,
@@ -63,7 +71,7 @@ export async function addGoldRecord(record: Omit<GoldRecord, "id" | "createdAt" 
   return {
     id: data.id,
     type: data.type as any,
-    karat: data.karat,
+    karat: data.karat as 21 | 24, // Fix: Cast to 21 | 24 type
     quantity: data.quantity,
     purchasePrice: data.purchase_price,
     purchaseDate: data.purchase_date ? new Date(data.purchase_date) : undefined,
@@ -107,7 +115,7 @@ export async function updateGoldRecord(id: string, record: Partial<GoldRecord>):
   return {
     id: data.id,
     type: data.type as any,
-    karat: data.karat,
+    karat: data.karat as 21 | 24, // Fix: Cast to 21 | 24 type
     quantity: data.quantity,
     purchasePrice: data.purchase_price,
     purchaseDate: data.purchase_date ? new Date(data.purchase_date) : undefined,

@@ -22,8 +22,8 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   
   const isEditing = !!editRecord;
   
-  const [type, setType] = useState<GoldType>(editRecord?.type || "Pound");
-  const [karat, setKarat] = useState<21 | 24>(editRecord?.karat || (type === "Pound" ? 21 : 24));
+  const [type, setType] = useState<GoldType>(editRecord?.type || "Sabikah");
+  // Karat is now automatically determined by the type selection
   const [quantity, setQuantity] = useState<string>(editRecord?.quantity.toString() || "");
   const [purchasePrice, setPurchasePrice] = useState<string>(editRecord?.purchasePrice.toString() || "");
   const [purchaseDate, setPurchaseDate] = useState<string>(
@@ -39,20 +39,10 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   const [cashback, setCashback] = useState<string>(editRecord?.cashback?.toString() || "");
   const [notes, setNotes] = useState<string>(editRecord?.notes || "");
 
-  // Update karat when type changes
-  useEffect(() => {
-    if (type === "Pound") {
-      setKarat(21);
-    } else if (type === "Sabikah") {
-      setKarat(24);
-    }
-  }, [type]);
-
   // Update form when editRecord changes
   useEffect(() => {
     if (editRecord) {
       setType(editRecord.type);
-      setKarat(editRecord.karat);
       setQuantity(editRecord.quantity.toString());
       setPurchasePrice(editRecord.purchasePrice.toString());
       setPurchaseDate(editRecord.purchaseDate 
@@ -69,6 +59,9 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Set karat based on type
+    const karat = type === "Pound" ? 21 : 24;
     
     const recordData = {
       type,
@@ -113,8 +106,6 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
             <GoldRecordForm
               type={type}
               setType={setType}
-              karat={karat}
-              setKarat={setKarat}
               quantity={quantity}
               setQuantity={setQuantity}
               purchasePrice={purchasePrice}
@@ -153,8 +144,6 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
             <GoldRecordForm
               type={type}
               setType={setType}
-              karat={karat}
-              setKarat={setKarat}
               quantity={quantity}
               setQuantity={setQuantity}
               purchasePrice={purchasePrice}
@@ -186,8 +175,6 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
 interface GoldRecordFormProps {
   type: GoldType;
   setType: (type: GoldType) => void;
-  karat: 21 | 24;
-  setKarat: (karat: 21 | 24) => void;
   quantity: string;
   setQuantity: (quantity: string) => void;
   purchasePrice: string;
@@ -213,8 +200,6 @@ interface GoldRecordFormProps {
 const GoldRecordForm = ({
   type,
   setType,
-  karat,
-  setKarat,
   quantity,
   setQuantity,
   purchasePrice,
@@ -249,41 +234,21 @@ const GoldRecordForm = ({
         <TabsContent value="basic" className="space-y-4">
           <div className="space-y-2">
             <Label>{isRTL ? 'نوع الذهب' : 'Gold Type'}</Label>
+            <div className="text-sm text-muted-foreground mb-2">
+              {isRTL ? 'سبيكة (عيار 24) أو جنيه (عيار 21)' : 'Sabikah (24K) or Pound (21K)'}
+            </div>
             <RadioGroup 
               value={type} 
               onValueChange={(value) => setType(value as GoldType)}
               className={`flex ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}
             >
               <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
-                <RadioGroupItem value="Pound" id="gold-type-pound" />
-                <Label htmlFor="gold-type-pound">{isRTL ? 'جنيه (عيار 21)' : 'Pound (21K)'}</Label>
-              </div>
-              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <RadioGroupItem value="Sabikah" id="gold-type-sabikah" />
                 <Label htmlFor="gold-type-sabikah">{isRTL ? 'سبيكة (عيار 24)' : 'Sabikah (24K)'}</Label>
               </div>
-            </RadioGroup>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>{isRTL ? 'العيار' : 'Karat'}</Label>
-            <div className="text-sm text-muted-foreground mb-2">
-              {type === "Pound" ? 
-                (isRTL ? 'الافتراضي: عيار 21' : 'Default: 21K') : 
-                (isRTL ? 'الافتراضي: عيار 24' : 'Default: 24K')}
-            </div>
-            <RadioGroup 
-              value={karat.toString()} 
-              onValueChange={(value) => setKarat(parseInt(value) as 21 | 24)}
-              className={`flex ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}
-            >
               <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
-                <RadioGroupItem value="21" id="gold-karat-21" />
-                <Label htmlFor="gold-karat-21">{isRTL ? 'عيار 21' : '21K'}</Label>
-              </div>
-              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
-                <RadioGroupItem value="24" id="gold-karat-24" />
-                <Label htmlFor="gold-karat-24">{isRTL ? 'عيار 24' : '24K'}</Label>
+                <RadioGroupItem value="Pound" id="gold-type-pound" />
+                <Label htmlFor="gold-type-pound">{isRTL ? 'جنيه (عيار 21)' : 'Pound (21K)'}</Label>
               </div>
             </RadioGroup>
           </div>
