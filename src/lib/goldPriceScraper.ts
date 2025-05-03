@@ -33,7 +33,7 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
     const response = await axios.request(config);
     
     // Parse the API response to extract 24K and 21K gold prices
-    if (response.data && response.status.success) {
+    if (response.status.success) {
       console.log("Successfully fetched prices from gold.g.apised.com API");
       
       // XAU represents pure gold (24K)
@@ -48,10 +48,12 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
       };
     } else {
       console.error("Invalid response format from gold.g.apised.com API");
+      console.error(response.data);
       return null;
     }
   } catch (error) {
     console.error("Error fetching from gold.g.apised.com API:", error);
+    console.error(response.data);
     return null;
   }
 }
