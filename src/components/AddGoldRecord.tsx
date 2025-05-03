@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -89,12 +90,14 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
       {!isEditing && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button 
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl"
-              size="icon"
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
+            <div className="flex justify-center mt-6 mb-10">
+              <Button 
+                className="flex items-center gap-2 bg-gold hover:bg-gold-dark text-white shadow-lg py-6 px-8"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Add New Record</span>
+              </Button>
+            </div>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <DialogHeader>
