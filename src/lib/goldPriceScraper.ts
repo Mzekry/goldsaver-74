@@ -33,25 +33,36 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
     const response = await axios.request(config);
     
     // Parse the API response to extract 24K and 21K gold prices
-    if (response.status.success) {
+    if (response.data && response.data.status === "success") {
       console.log("Successfully fetched prices from gold.g.apised.com API");
       
-      // XAU represents pure gold (24K)
-      const k24Price = Math.round(response.data.metal_prices.XAU.price_24k);
-      // 21K is 87.5% pure (21/24)
-      const k21Price = Math.round(k24Price * (21/24));
-      
-      return {
-        k24: k24Price,
-        k21: k21Price,
-        lastUpdated: new Date()
-      };
+      // Extract the prices from the correct path in the response
+      if (response.data.data && 
+          response.data.data.metal_prices && 
+          response.data.data.metal_prices.XAU) {
+        
+        const metalPrices = response.data.data.metal_prices.XAU;
+        
+        // Use the direct values from the API
+        const k24Price = Math.round(metalPrices.price_24k);
+        const k21Price = Math.round(metalPrices.price_21k);
+        
+        console.log(`API prices - 24K: ${k24Price} EGP, 21K: ${k21Price} EGP`);
+        
+        return {
+          k24: k24Price,
+          k21: k21Price,
+          lastUpdated: new Date()
+        };
+      } else {
+        console.error("Missing expected data structure in API response");
+        console.log("Response data:", JSON.stringify(response.data, null, 2));
+        return null;
+      }
     } else {
-      console.clear();
-      console.error("Invalid response format from gold.g.apised.com API");
-      console.error(response.data.metal_prices.XAU.price_24k);
-      console.error(response.data.status);
-      console.error(config);
+      console.error("Invalid response from gold.g.apised.com API");
+      console.log("Response status:", response.status);
+      console.log("Response data:", JSON.stringify(response.data, null, 2));
       return null;
     }
   } catch (error) {
