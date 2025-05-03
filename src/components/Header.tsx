@@ -1,12 +1,15 @@
 
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import { Globe, User, LogOut } from "lucide-react";
 import { useGold } from "@/contexts/GoldContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Link } from "react-router-dom";
 
 export const Header = () => {
   const { goldPrices, switchLanguage, language, translations } = useGold();
+  const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
 
   // Handle language switch with a more mobile-friendly approach
@@ -19,16 +22,39 @@ export const Header = () => {
     <header className="bg-navy text-white p-4 shadow-md" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto flex flex-col items-center justify-between max-w-md">
         <div className="flex items-center w-full justify-between mb-4">
-          {/* Left side - empty to balance the layout */}
-          <div className="w-10 invisible"> </div>
+          {/* Left side - Auth button */}
+          <div>
+            {user ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={signOut}
+                className="text-white hover:bg-navy-light touch-manipulation"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  className="text-white hover:bg-navy-light touch-manipulation"
+                >
+                  <User className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Button>
+              </Link>
+            )}
+          </div>
           
           {/* Center - App title */}
-          <div className="flex items-center justify-center">
+          <Link to="/" className="flex items-center justify-center">
             <div className="w-10 h-10 bg-gold rounded-full flex items-center justify-center mr-3">
               <span className="text-navy-dark text-xl font-bold">G</span>
             </div>
             <h1 className="text-2xl font-bold">{translations.appName}</h1>
-          </div>
+          </Link>
           
           {/* Right side - Language switcher */}
           <div>

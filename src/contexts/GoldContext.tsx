@@ -1,9 +1,14 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
-import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/components/ui/use-toast";
 import { getGoldPrices } from "@/lib/goldPriceScraper";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  getUserGoldRecords, 
+  addGoldRecord as addGoldRecordToSupabase, 
+  updateGoldRecord as updateGoldRecordInSupabase,
+  deleteGoldRecord as deleteGoldRecordFromSupabase
+} from "@/services/goldRecordService";
 
 interface GoldContextType {
   records: GoldRecord[];
@@ -21,6 +26,7 @@ interface GoldContextType {
   isZakatEligible: boolean;
   zakatAmount: number;
   translations: Record<string, any>;
+  reloadRecords: () => Promise<void>;
 }
 
 const defaultGoldPrices: GoldPrice = {
@@ -129,6 +135,7 @@ const GoldContext = createContext<GoldContextType | undefined>(undefined);
 
 export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [records, setRecords] = useState<GoldRecord[]>([]);
   const [goldPrices, setGoldPrices] = useState<GoldPrice>(defaultGoldPrices);
   const [isLoading, setIsLoading] = useState(false);
@@ -139,25 +146,8 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const translations = translationsData[language];
 
   useEffect(() => {
-    const savedRecords = localStorage.getItem("goldRecords");
     const savedPrices = localStorage.getItem("goldPrices");
     const savedLanguage = localStorage.getItem("language");
-    
-    if (savedRecords) {
-      try {
-        const parsedRecords = JSON.parse(savedRecords);
-        const recordsWithDates = parsedRecords.map((record: any) => ({
-          ...record,
-          createdAt: new Date(record.createdAt),
-          updatedAt: new Date(record.updatedAt),
-          purchaseDate: record.purchaseDate ? new Date(record.purchaseDate) : undefined,
-        }));
-        setRecords(recordsWithDates);
-      } catch (err) {
-        console.error("Error parsing saved records:", err);
-        setError("Failed to load saved records");
-      }
-    }
     
     if (savedPrices) {
       try {
@@ -176,11 +166,14 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Load gold records when user changes
   useEffect(() => {
-    if (records.length > 0) {
-      localStorage.setItem("goldRecords", JSON.stringify(records));
+    if (user) {
+      loadRecords();
+    } else {
+      setRecords([]);
     }
-  }, [records]);
+  }, [user]);
 
   useEffect(() => {
     localStorage.setItem("goldPrices", JSON.stringify(goldPrices));
@@ -200,41 +193,122 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(refreshInterval);
   }, []);
 
-  const addRecord = (record: Omit<GoldRecord, "id" | "createdAt" | "updatedAt">) => {
-    const newRecord: GoldRecord = {
-      ...record,
-      id: uuidv4(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+  const loadRecords = async () => {
+    if (!user) return;
     
-    setRecords((prevRecords) => [...prevRecords, newRecord]);
-    toast({ 
-      title: translations.recordAdded,
-      description: translations.recordAddedDesc.replace("{quantity}", record.quantity.toString()).replace("{karat}", record.karat.toString()),
-    });
+    try {
+      setIsLoading(true);
+      const records = await getUserGoldRecords();
+      setRecords(records);
+    } catch (err: any) {
+      console.error("Error loading gold records:", err);
+      setError(err.message);
+      toast({
+        title: "Error loading gold records",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateRecord = (id: string, updatedFields: Partial<GoldRecord>) => {
-    setRecords((prevRecords) => 
-      prevRecords.map((record) => 
-        record.id === id 
-          ? { ...record, ...updatedFields, updatedAt: new Date() } 
-          : record
-      )
-    );
-    toast({ 
-      title: translations.recordUpdated,
-      description: translations.recordUpdatedDesc,
-    });
+  const reloadRecords = async () => {
+    await loadRecords();
   };
 
-  const deleteRecord = (id: string) => {
-    setRecords((prevRecords) => prevRecords.filter((record) => record.id !== id));
-    toast({ 
-      title: translations.recordDeleted,
-      description: translations.recordDeletedDesc,
-    });
+  const addRecord = async (record: Omit<GoldRecord, "id" | "createdAt" | "updatedAt">) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to add gold records",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const newRecord = await addGoldRecordToSupabase(record);
+      setRecords((prevRecords) => [...prevRecords, newRecord]);
+      toast({ 
+        title: translations.recordAdded,
+        description: translations.recordAddedDesc.replace("{quantity}", record.quantity.toString()).replace("{karat}", record.karat.toString()),
+      });
+    } catch (err: any) {
+      console.error("Error adding gold record:", err);
+      toast({
+        title: "Error adding record",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateRecord = async (id: string, updatedFields: Partial<GoldRecord>) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to update gold records",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const updatedRecord = await updateGoldRecordInSupabase(id, updatedFields);
+      setRecords((prevRecords) => 
+        prevRecords.map((record) => 
+          record.id === id ? updatedRecord : record
+        )
+      );
+      toast({ 
+        title: translations.recordUpdated,
+        description: translations.recordUpdatedDesc,
+      });
+    } catch (err: any) {
+      console.error("Error updating gold record:", err);
+      toast({
+        title: "Error updating record",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteRecord = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to delete gold records",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      await deleteGoldRecordFromSupabase(id);
+      setRecords((prevRecords) => prevRecords.filter((record) => record.id !== id));
+      toast({ 
+        title: translations.recordDeleted,
+        description: translations.recordDeletedDesc,
+      });
+    } catch (err: any) {
+      console.error("Error deleting gold record:", err);
+      toast({
+        title: "Error deleting record",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const switchLanguage = () => {
@@ -252,7 +326,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     
     try {
-      // Use our new gold price scraper
+      // Use our gold price scraper
       const newPrices = await getGoldPrices();
       setGoldPrices(newPrices);
       
@@ -323,6 +397,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isZakatEligible,
         zakatAmount,
         translations,
+        reloadRecords
       }}
     >
       {children}
