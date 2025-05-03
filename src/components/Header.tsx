@@ -27,7 +27,7 @@ export const Header = () => {
             <Button 
               size="sm" 
               variant="outline" 
-              onClick={() => switchLanguage()}
+              onClick={switchLanguage}
               className="bg-gold text-navy hover:bg-gold/80 border-gold"
             >
               <Globe className="h-4 w-4 mr-1" />
