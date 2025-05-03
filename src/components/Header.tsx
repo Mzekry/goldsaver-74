@@ -1,74 +1,37 @@
 
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Globe, Share2 } from "lucide-react";
+import { Globe } from "lucide-react";
 import { useGold } from "@/contexts/GoldContext";
 import { formatCurrency } from "@/lib/utils";
-import { useState } from "react";
 
 export const Header = () => {
-  const { goldPrices, refreshPrices, isLoading, switchLanguage, language } = useGold();
-  const [sharing, setSharing] = useState(false);
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        setSharing(true);
-        await navigator.share({
-          title: 'GoldSaver',
-          text: 'Track your gold investments with GoldSaver!',
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-      } finally {
-        setSharing(false);
-      }
-    } else {
-      // Fallback for browsers that don't support share API
-      alert('Copy this link to share: ' + window.location.href);
-    }
-  };
+  const { goldPrices, switchLanguage, language } = useGold();
 
   return (
     <header className="bg-navy text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col items-center justify-between max-w-md">
         <div className="flex items-center w-full justify-between mb-4">
-          <div className="flex items-center">
+          {/* Left side - empty to balance the layout */}
+          <div className="w-10 invisible"> </div>
+          
+          {/* Center - App title */}
+          <div className="flex items-center justify-center">
             <div className="w-10 h-10 bg-gold rounded-full flex items-center justify-center mr-3">
               <span className="text-navy-dark text-xl font-bold">G</span>
             </div>
-            <h1 className="text-2xl font-bold">GoldSaver</h1>
+            <h1 className="text-2xl font-bold">Gold Tracker</h1>
           </div>
           
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={() => refreshPrices()}
-              disabled={isLoading}
-              className="text-white border-white/30 hover:bg-white/10"
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
+          {/* Right side - Language switcher */}
+          <div>
             <Button 
               size="sm" 
               variant="outline" 
               onClick={() => switchLanguage()}
-              className="text-white border-white/30 hover:bg-white/10"
+              className="bg-gold text-navy hover:bg-gold/80 border-gold"
             >
               <Globe className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">{language === 'en' ? 'العربية' : 'English'}</span>
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={handleShare}
-              disabled={sharing}
-              className="text-white border-white/30 hover:bg-white/10"
-            >
-              <Share2 className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Share</span>
             </Button>
           </div>
         </div>
