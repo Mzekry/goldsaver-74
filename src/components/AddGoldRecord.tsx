@@ -17,7 +17,7 @@ interface AddGoldRecordProps {
 }
 
 export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
-  const { addRecord, updateRecord } = useGold();
+  const { addRecord, updateRecord, translations, language } = useGold();
   const [open, setOpen] = useState(!!editRecord);
   
   const isEditing = !!editRecord;
@@ -105,10 +105,10 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
               <Plus className="h-6 w-6" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px]" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <DialogHeader>
-              <DialogTitle>Add New Gold Record</DialogTitle>
-              <DialogDescription>Add details about your gold purchase below.</DialogDescription>
+              <DialogTitle>{translations.addNewRecord}</DialogTitle>
+              <DialogDescription>{language === 'ar' ? 'أضف تفاصيل شراء الذهب أدناه.' : 'Add details about your gold purchase below.'}</DialogDescription>
             </DialogHeader>
             <GoldRecordForm
               type={type}
@@ -133,6 +133,8 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
               setNotes={setNotes}
               handleSubmit={handleSubmit}
               isEditing={isEditing}
+              translations={translations}
+              language={language}
             />
           </DialogContent>
         </Dialog>
@@ -143,10 +145,10 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
           setOpen(value);
           if (!value) onClose();
         }}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px]" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <DialogHeader>
-              <DialogTitle>Edit Gold Record</DialogTitle>
-              <DialogDescription>Modify the details of your gold record.</DialogDescription>
+              <DialogTitle>{translations.editRecord}</DialogTitle>
+              <DialogDescription>{language === 'ar' ? 'عدِّل تفاصيل سجل الذهب الخاص بك.' : 'Modify the details of your gold record.'}</DialogDescription>
             </DialogHeader>
             <GoldRecordForm
               type={type}
@@ -171,6 +173,8 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
               setNotes={setNotes}
               handleSubmit={handleSubmit}
               isEditing={isEditing}
+              translations={translations}
+              language={language}
             />
           </DialogContent>
         </Dialog>
@@ -202,6 +206,8 @@ interface GoldRecordFormProps {
   setNotes: (notes: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
   isEditing: boolean;
+  translations: Record<string, any>;
+  language: 'en' | 'ar';
 }
 
 const GoldRecordForm = ({
@@ -227,57 +233,63 @@ const GoldRecordForm = ({
   setNotes,
   handleSubmit,
   isEditing,
+  translations,
+  language
 }: GoldRecordFormProps) => {
+  const isRTL = language === 'ar';
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <Tabs defaultValue="basic">
         <TabsList className="w-full">
-          <TabsTrigger value="basic" className="flex-1">Basic Info</TabsTrigger>
-          <TabsTrigger value="advanced" className="flex-1">Advanced</TabsTrigger>
+          <TabsTrigger value="basic" className="flex-1">{isRTL ? 'معلومات أساسية' : 'Basic Info'}</TabsTrigger>
+          <TabsTrigger value="advanced" className="flex-1">{isRTL ? 'متقدم' : 'Advanced'}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="basic" className="space-y-4">
           <div className="space-y-2">
-            <Label>Gold Type</Label>
+            <Label>{isRTL ? 'نوع الذهب' : 'Gold Type'}</Label>
             <RadioGroup 
               value={type} 
               onValueChange={(value) => setType(value as GoldType)}
-              className="flex space-x-4"
+              className={`flex ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}
             >
-              <div className="flex items-center space-x-2">
+              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <RadioGroupItem value="Pound" id="gold-type-pound" />
-                <Label htmlFor="gold-type-pound">Pound (21K)</Label>
+                <Label htmlFor="gold-type-pound">{isRTL ? 'جنيه (عيار 21)' : 'Pound (21K)'}</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <RadioGroupItem value="Sabikah" id="gold-type-sabikah" />
-                <Label htmlFor="gold-type-sabikah">Sabikah (24K)</Label>
+                <Label htmlFor="gold-type-sabikah">{isRTL ? 'سبيكة (عيار 24)' : 'Sabikah (24K)'}</Label>
               </div>
             </RadioGroup>
           </div>
           
           <div className="space-y-2">
-            <Label>Karat</Label>
+            <Label>{isRTL ? 'العيار' : 'Karat'}</Label>
             <div className="text-sm text-muted-foreground mb-2">
-              {type === "Pound" ? "Default: 21K" : "Default: 24K"}
+              {type === "Pound" ? 
+                (isRTL ? 'الافتراضي: عيار 21' : 'Default: 21K') : 
+                (isRTL ? 'الافتراضي: عيار 24' : 'Default: 24K')}
             </div>
             <RadioGroup 
               value={karat.toString()} 
               onValueChange={(value) => setKarat(parseInt(value) as 21 | 24)}
-              className="flex space-x-4"
+              className={`flex ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}
             >
-              <div className="flex items-center space-x-2">
+              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <RadioGroupItem value="21" id="gold-karat-21" />
-                <Label htmlFor="gold-karat-21">21K</Label>
+                <Label htmlFor="gold-karat-21">{isRTL ? 'عيار 21' : '21K'}</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className={`flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
                 <RadioGroupItem value="24" id="gold-karat-24" />
-                <Label htmlFor="gold-karat-24">24K</Label>
+                <Label htmlFor="gold-karat-24">{isRTL ? 'عيار 24' : '24K'}</Label>
               </div>
             </RadioGroup>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (grams)</Label>
+            <Label htmlFor="quantity">{isRTL ? 'الكمية (جرام)' : 'Quantity (grams)'}</Label>
             <Input
               id="quantity"
               type="number"
@@ -285,13 +297,14 @@ const GoldRecordForm = ({
               step="0.01"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Enter quantity in grams"
+              placeholder={isRTL ? 'أدخل الكمية بالجرام' : 'Enter quantity in grams'}
               required
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="purchasePrice">Total Purchase Price (EGP)</Label>
+            <Label htmlFor="purchasePrice">{isRTL ? 'إجمالي سعر الشراء (جنيه)' : 'Total Purchase Price (EGP)'}</Label>
             <Input
               id="purchasePrice"
               type="number"
@@ -299,45 +312,49 @@ const GoldRecordForm = ({
               step="0.01"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
-              placeholder="Enter total price paid"
+              placeholder={isRTL ? 'أدخل السعر الإجمالي المدفوع' : 'Enter total price paid'}
               required
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="purchaseDate">Purchase Date</Label>
+            <Label htmlFor="purchaseDate">{isRTL ? 'تاريخ الشراء' : 'Purchase Date'}</Label>
             <Input
               id="purchaseDate"
               type="date"
               value={purchaseDate}
               onChange={(e) => setPurchaseDate(e.target.value)}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
         </TabsContent>
         
         <TabsContent value="advanced" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="shopName">Shop Name</Label>
+            <Label htmlFor="shopName">{isRTL ? 'اسم المتجر' : 'Shop Name'}</Label>
             <Input
               id="shopName"
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
-              placeholder="Where did you buy it from?"
+              placeholder={isRTL ? 'من أين اشتريت الذهب؟' : 'Where did you buy it from?'}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="company">Gold Company</Label>
+            <Label htmlFor="company">{isRTL ? 'شركة الذهب' : 'Gold Company'}</Label>
             <Input
               id="company"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              placeholder="e.g. BTC, etc."
+              placeholder={isRTL ? 'مثال: بي تي سي، إلخ.' : 'e.g. BTC, etc.'}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="productionCost">Production Cost (EGP)</Label>
+            <Label htmlFor="productionCost">{isRTL ? 'تكلفة التصنيع (جنيه)' : 'Production Cost (EGP)'}</Label>
             <Input
               id="productionCost"
               type="number"
@@ -345,12 +362,13 @@ const GoldRecordForm = ({
               step="0.01"
               value={productionCost}
               onChange={(e) => setProductionCost(e.target.value)}
-              placeholder="Manufacturing/production cost"
+              placeholder={isRTL ? 'تكلفة التصنيع/الإنتاج' : 'Manufacturing/production cost'}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="cashback">Production Cost Cashback (EGP)</Label>
+            <Label htmlFor="cashback">{isRTL ? 'استرداد نقدي لتكلفة التصنيع (جنيه)' : 'Production Cost Cashback (EGP)'}</Label>
             <Input
               id="cashback"
               type="number"
@@ -358,26 +376,28 @@ const GoldRecordForm = ({
               step="0.01"
               value={cashback}
               onChange={(e) => setCashback(e.target.value)}
-              placeholder="Money returned for production"
+              placeholder={isRTL ? 'المبلغ المسترد مقابل التصنيع' : 'Money returned for production'}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes</Label>
+            <Label htmlFor="notes">{isRTL ? 'ملاحظات إضافية' : 'Additional Notes'}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any other details..."
+              placeholder={isRTL ? 'أي تفاصيل أخرى...' : 'Any other details...'}
               rows={3}
+              className={isRTL ? 'text-right' : ''}
             />
           </div>
         </TabsContent>
       </Tabs>
       
-      <div className="flex justify-end">
+      <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'}`}>
         <Button type="submit" className="w-full sm:w-auto">
-          {isEditing ? "Update Record" : "Add Record"}
+          {isEditing ? (isRTL ? translations.editRecord : 'Update Record') : (isRTL ? translations.addNewRecord : 'Add Record')}
         </Button>
       </div>
     </form>

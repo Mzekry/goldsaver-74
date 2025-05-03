@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -67,13 +66,13 @@ const translationsData = {
     footer: "All rights reserved."
   },
   ar: {
-    appName: "متتبع الذهب",
+    appName: "سجل الذهب",
     lastUpdated: "آخر تحديث",
     totalPurchaseValue: "إجمالي قيمة الشراء",
     currentValue: "القيمة الحالية",
     zakatCalculation: "حساب الزكاة",
     eligibleForZakat: "مستحق للزكاة",
-    notEligibleForZakat: "غير مستحق للزكاة حتى الآن",
+    notEligibleForZakat: "لم تصل لنصاب الزكاة",
     yourGoldRecords: "سجلات الذهب الخاصة بك",
     hide: "إخفاء",
     show: "إظهار",
@@ -81,7 +80,6 @@ const translationsData = {
     from: "من",
     purchasePrice: "سعر الشراء",
     purchaseDate: "تاريخ الشراء",
-    currentValue: "القيمة الحالية", 
     addNewRecord: "إضافة سجل جديد",
     editRecord: "تعديل السجل",
     deleteRecord: "حذف السجل",
@@ -98,7 +96,7 @@ const translationsData = {
     pricesUpdatedDesc: "عيار ٢١: {k21} جنيه، عيار ٢٤: {k24} جنيه",
     usingEstimatedPrices: "استخدام أسعار تقديرية",
     usingEstimatedPricesDesc: "تعذر جلب الأسعار. استخدام تقديرات: عيار ٢١: {k21} جنيه، عيار ٢٤: {k24} جنيه",
-    share: "تتبع استثمارات الذهب الخاصة بك مع متتبع الذهب!",
+    share: "تتبع استثمارات الذهب الخاصة بك مع سجل الذهب!",
     copyLink: "انسخ هذا الرابط للمشاركة",
     footer: "جميع الحقوق محفوظة."
   }
