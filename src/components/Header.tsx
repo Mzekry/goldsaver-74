@@ -3,9 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { useGold } from "@/contexts/GoldContext";
 import { formatCurrency } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Header = () => {
   const { goldPrices, switchLanguage, language, translations } = useGold();
+  const isMobile = useIsMobile();
+
+  // Handle language switch with a more mobile-friendly approach
+  const handleLanguageSwitch = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent any default behavior
+    switchLanguage();
+  };
 
   return (
     <header className="bg-navy text-white p-4 shadow-md" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -27,8 +35,9 @@ export const Header = () => {
             <Button 
               size="sm" 
               variant="outline" 
-              onClick={switchLanguage}
-              className="bg-gold text-navy hover:bg-gold/80 border-gold"
+              onClick={handleLanguageSwitch}
+              onTouchEnd={isMobile ? handleLanguageSwitch : undefined}
+              className="bg-gold text-navy hover:bg-gold/80 border-gold touch-manipulation"
             >
               <Globe className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">{language === 'en' ? 'العربية' : 'English'}</span>
