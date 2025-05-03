@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,6 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   const isEditing = !!editRecord;
   
   const [type, setType] = useState<GoldType>(editRecord?.type || "Sabikah");
-  // Karat is now automatically determined by the type selection
   const [quantity, setQuantity] = useState<string>(editRecord?.quantity.toString() || "");
   const [purchasePrice, setPurchasePrice] = useState<string>(editRecord?.purchasePrice.toString() || "");
   const [purchaseDate, setPurchaseDate] = useState<string>(
@@ -60,8 +58,8 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Set karat based on type
-    const karat = type === "Pound" ? 21 : 24;
+    // Set karat based on type - and explicitly cast to accepted type
+    const karat = type === "Pound" ? 21 as const : 24 as const;
     
     const recordData = {
       type,
