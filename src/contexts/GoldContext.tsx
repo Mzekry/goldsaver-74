@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -20,12 +19,88 @@ interface GoldContextType {
   currentValue: number;
   isZakatEligible: boolean;
   zakatAmount: number;
+  translations: Record<string, any>;
 }
 
 const defaultGoldPrices: GoldPrice = {
   k21: 3700, // Default price for 21K gold per gram in EGP
   k24: 4200, // Default price for 24K gold per gram in EGP
   lastUpdated: new Date(),
+};
+
+// Translations for all text in the app
+const translationsData = {
+  en: {
+    appName: "Gold Tracker",
+    lastUpdated: "Last updated",
+    totalPurchaseValue: "Total Purchase Value",
+    currentValue: "Current Value",
+    zakatCalculation: "Zakat Calculation",
+    eligibleForZakat: "Eligible for Zakat",
+    notEligibleForZakat: "Not eligible for Zakat yet",
+    yourGoldRecords: "Your Gold Records",
+    hide: "Hide",
+    show: "Show",
+    noRecords: "No gold records yet. Add your first record!",
+    from: "From",
+    purchasePrice: "Purchase Price",
+    purchaseDate: "Purchase Date",
+    addNewRecord: "Add New Record",
+    editRecord: "Edit Record",
+    deleteRecord: "Delete Record",
+    recordAdded: "Record Added",
+    recordAddedDesc: "Added {quantity}g of {karat}K gold",
+    recordUpdated: "Record Updated",
+    recordUpdatedDesc: "Gold record has been updated successfully",
+    recordDeleted: "Record Deleted",
+    recordDeletedDesc: "Gold record has been deleted",
+    languageChanged: "Language Changed",
+    languageChangedToArabic: "تم تغيير اللغة إلى العربية",
+    languageChangedToEnglish: "Language changed to English",
+    pricesUpdated: "Prices Updated",
+    pricesUpdatedDesc: "21K: {k21} EGP, 24K: {k24} EGP",
+    usingEstimatedPrices: "Using Estimated Prices",
+    usingEstimatedPricesDesc: "Couldn't fetch prices. Using estimates: 21K: {k21} EGP, 24K: {k24} EGP",
+    share: "Track your gold investments with Gold Tracker!",
+    copyLink: "Copy this link to share",
+    footer: "All rights reserved."
+  },
+  ar: {
+    appName: "متتبع الذهب",
+    lastUpdated: "آخر تحديث",
+    totalPurchaseValue: "إجمالي قيمة الشراء",
+    currentValue: "القيمة الحالية",
+    zakatCalculation: "حساب الزكاة",
+    eligibleForZakat: "مستحق للزكاة",
+    notEligibleForZakat: "غير مستحق للزكاة حتى الآن",
+    yourGoldRecords: "سجلات الذهب الخاصة بك",
+    hide: "إخفاء",
+    show: "إظهار",
+    noRecords: "لا توجد سجلات ذهب حتى الآن. أضف أول سجل!",
+    from: "من",
+    purchasePrice: "سعر الشراء",
+    purchaseDate: "تاريخ الشراء",
+    currentValue: "القيمة الحالية",
+    addNewRecord: "إضافة سجل جديد",
+    editRecord: "تعديل السجل",
+    deleteRecord: "حذف السجل",
+    recordAdded: "تم إضافة السجل",
+    recordAddedDesc: "تمت إضافة {quantity} جرام من الذهب عيار {karat}",
+    recordUpdated: "تم تحديث السجل",
+    recordUpdatedDesc: "تم تحديث سجل الذهب بنجاح",
+    recordDeleted: "تم حذف السجل",
+    recordDeletedDesc: "تم حذف سجل الذهب",
+    languageChanged: "تم تغيير اللغة",
+    languageChangedToArabic: "تم تغيير اللغة إلى العربية",
+    languageChangedToEnglish: "تم تغيير اللغة إلى الإنجليزية",
+    pricesUpdated: "تم تحديث الأسعار",
+    pricesUpdatedDesc: "عيار ٢١: {k21} جنيه، عيار ٢٤: {k24} جنيه",
+    usingEstimatedPrices: "استخدام أسعار تقديرية",
+    usingEstimatedPricesDesc: "تعذر جلب الأسعار. استخدام تقديرات: عيار ٢١: {k21} جنيه، عيار ٢٤: {k24} جنيه",
+    share: "تتبع استثمارات الذهب الخاصة بك مع متتبع الذهب!",
+    copyLink: "انسخ هذا الرابط للمشاركة",
+    footer: "جميع الحقوق محفوظة."
+  }
 };
 
 const GoldContext = createContext<GoldContextType | undefined>(undefined);
@@ -37,6 +112,9 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
+
+  // Use translations based on the current language
+  const translations = translationsData[language];
 
   useEffect(() => {
     const savedRecords = localStorage.getItem("goldRecords");
@@ -110,8 +188,8 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setRecords((prevRecords) => [...prevRecords, newRecord]);
     toast({ 
-      title: "Record Added",
-      description: `Added ${record.quantity}g of ${record.karat}K gold`,
+      title: translations.recordAdded,
+      description: translations.recordAddedDesc.replace("{quantity}", record.quantity.toString()).replace("{karat}", record.karat.toString()),
     });
   };
 
@@ -124,24 +202,26 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
     );
     toast({ 
-      title: "Record Updated",
-      description: "Gold record has been updated successfully",
+      title: translations.recordUpdated,
+      description: translations.recordUpdatedDesc,
     });
   };
 
   const deleteRecord = (id: string) => {
     setRecords((prevRecords) => prevRecords.filter((record) => record.id !== id));
     toast({ 
-      title: "Record Deleted",
-      description: "Gold record has been deleted",
+      title: translations.recordDeleted,
+      description: translations.recordDeletedDesc,
     });
   };
 
   const switchLanguage = () => {
     setLanguage((prevLang) => (prevLang === 'en' ? 'ar' : 'en'));
     toast({ 
-      title: "Language Changed",
-      description: language === 'en' ? "تم تغيير اللغة إلى العربية" : "Language changed to English",
+      title: translationsData[language === 'en' ? 'ar' : 'en'].languageChanged,
+      description: language === 'en' ? 
+        translationsData.ar.languageChangedToArabic : 
+        translationsData.en.languageChangedToEnglish,
     });
   };
 
@@ -155,10 +235,8 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGoldPrices(newPrices);
       
       toast({ 
-        title: language === 'en' ? "Prices Updated" : "تم تحديث الأسعار",
-        description: language === 'en' ? 
-          `21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
-          `عيار ٢١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
+        title: translations[language === 'en' ? "pricesUpdated" : "pricesUpdated"],
+        description: translations.pricesUpdatedDesc.replace("{k21}", newPrices.k21.toString()).replace("{k24}", newPrices.k24.toString()),
       });
     } catch (err) {
       console.error("Error fetching gold prices:", err);
@@ -181,10 +259,8 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setGoldPrices(newPrices);
       
       toast({ 
-        title: language === 'en' ? "Using Estimated Prices" : "استخدام أسعار تقديرية",
-        description: language === 'en' ? 
-          `Couldn't fetch prices. Using estimates: 21K: ${newPrices.k21} EGP, 24K: ${newPrices.k24} EGP` : 
-          `تعذر جلب الأسعار. استخدام تقديرات: عيار ٢١: ${newPrices.k21} جنيه، عيار ٢٤: ${newPrices.k24} جنيه`,
+        title: translations[language === 'en' ? "usingEstimatedPrices" : "usingEstimatedPrices"],
+        description: translations.usingEstimatedPricesDesc.replace("{k21}", newPrices.k21.toString()).replace("{k24}", newPrices.k24.toString()),
         variant: "destructive"
       });
     } finally {
@@ -224,6 +300,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentValue,
         isZakatEligible,
         zakatAmount,
+        translations,
       }}
     >
       {children}

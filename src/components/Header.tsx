@@ -5,10 +5,10 @@ import { useGold } from "@/contexts/GoldContext";
 import { formatCurrency } from "@/lib/utils";
 
 export const Header = () => {
-  const { goldPrices, switchLanguage, language } = useGold();
+  const { goldPrices, switchLanguage, language, translations } = useGold();
 
   return (
-    <header className="bg-navy text-white p-4 shadow-md">
+    <header className="bg-navy text-white p-4 shadow-md" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto flex flex-col items-center justify-between max-w-md">
         <div className="flex items-center w-full justify-between mb-4">
           {/* Left side - empty to balance the layout */}
@@ -19,7 +19,7 @@ export const Header = () => {
             <div className="w-10 h-10 bg-gold rounded-full flex items-center justify-center mr-3">
               <span className="text-navy-dark text-xl font-bold">G</span>
             </div>
-            <h1 className="text-2xl font-bold">Gold Tracker</h1>
+            <h1 className="text-2xl font-bold">{translations.appName}</h1>
           </div>
           
           {/* Right side - Language switcher */}
@@ -48,7 +48,7 @@ export const Header = () => {
             </div>
           </div>
           <div className="text-xs text-gray-300 mt-1">
-            Last updated: {goldPrices.lastUpdated.toLocaleTimeString()}
+            {translations.lastUpdated}: {goldPrices.lastUpdated.toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US')}
           </div>
         </div>
       </div>

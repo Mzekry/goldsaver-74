@@ -2,17 +2,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
+import { useGold } from "@/contexts/GoldContext";
 
 export const FloatingShareButton = () => {
   const [sharing, setSharing] = useState(false);
+  const { translations, language } = useGold();
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         setSharing(true);
         await navigator.share({
-          title: 'Gold Tracker',
-          text: 'Track your gold investments with Gold Tracker!',
+          title: translations.appName,
+          text: translations.share,
           url: window.location.href,
         });
       } catch (error) {
@@ -22,7 +24,7 @@ export const FloatingShareButton = () => {
       }
     } else {
       // Fallback for browsers that don't support share API
-      alert('Copy this link to share: ' + window.location.href);
+      alert(`${translations.copyLink}: ${window.location.href}`);
     }
   };
 

@@ -12,23 +12,23 @@ interface GoldRecordListProps {
 }
 
 export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
-  const { records, deleteRecord, goldPrices } = useGold();
+  const { records, deleteRecord, goldPrices, translations, language } = useGold();
   const [isOpen, setIsOpen] = useState(true);
   
   if (records.length === 0) {
     return (
       <Card className="mb-6">
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">No gold records yet. Add your first record!</p>
+        <CardContent className="p-6 text-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+          <p className="text-muted-foreground">{translations.noRecords}</p>
         </CardContent>
       </Card>
     );
   }
   
   return (
-    <div className="mb-6">
+    <div className="mb-6" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Your Gold Records</h2>
+        <h2 className="text-xl font-bold">{translations.yourGoldRecords}</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -38,12 +38,12 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
           {isOpen ? (
             <>
               <ChevronUp className="h-4 w-4 mr-1" />
-              <span>Hide</span>
+              <span>{translations.hide}</span>
             </>
           ) : (
             <>
               <ChevronDown className="h-4 w-4 mr-1" />
-              <span>Show</span>
+              <span>{translations.show}</span>
             </>
           )}
         </Button>
@@ -66,16 +66,19 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold">
-                        {record.quantity}g of {record.karat}K {record.type}
+                        {record.quantity}g {language === 'ar' ? 'من الذهب عيار' : 'of'} {record.karat}K {language === 'en' ? record.type : 
+                          record.type === 'Jewelry' ? 'مجوهرات' : 
+                          record.type === 'Coin' ? 'عملات' : 
+                          record.type === 'Bar' ? 'سبائك' : record.type}
                       </h3>
                       {record.purchaseDate && (
                         <p className="text-sm text-muted-foreground">
-                          {formatDate(record.purchaseDate)}
+                          {formatDate(record.purchaseDate, language)}
                         </p>
                       )}
                       {record.shopName && (
                         <p className="text-sm text-muted-foreground">
-                          From: {record.shopName}
+                          {translations.from}: {record.shopName}
                         </p>
                       )}
                     </div>
@@ -85,6 +88,7 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                         variant="ghost"
                         onClick={() => onEditRecord(record)}
                         className="h-8 w-8"
+                        title={translations.editRecord}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -93,6 +97,7 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                         variant="ghost"
                         onClick={() => deleteRecord(record.id)}
                         className="h-8 w-8 text-destructive"
+                        title={translations.deleteRecord}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -101,11 +106,11 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                   
                   <div className="grid grid-cols-2 mt-3 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Purchase Price</p>
+                      <p className="text-sm text-muted-foreground">{translations.purchasePrice}</p>
                       <p className="font-medium">{formatCurrency(record.purchasePrice)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Current Value</p>
+                      <p className="text-sm text-muted-foreground">{translations.currentValue}</p>
                       <p className="font-medium">{formatCurrency(currentValue)}</p>
                       <p className={`text-xs ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
                         {isProfit ? '+' : ''}{formatCurrency(difference)} ({percentChange}%)

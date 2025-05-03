@@ -21,26 +21,28 @@ const Index = () => {
 
   return (
     <GoldProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        
-        <main className="flex-grow container mx-auto px-4 py-6 max-w-md">
-          <GoldSummary />
-          <GoldRecordList onEditRecord={handleEditRecord} />
-          <AddGoldRecord 
-            editRecord={editingRecord} 
-            onClose={handleCloseDialog} 
-          />
-        </main>
-        
-        <FloatingShareButton />
-        
-        <footer className="bg-navy-dark text-white py-4 text-center text-sm">
-          <div className="container mx-auto">
-            <p>&copy; {new Date().getFullYear()} Gold Tracker. All rights reserved.</p>
-          </div>
-        </footer>
-      </div>
+      {({ language, translations }) => (
+        <div className="min-h-screen flex flex-col bg-gray-50">
+          <Header />
+          
+          <main className="flex-grow container mx-auto px-4 py-6 max-w-md">
+            <GoldSummary />
+            <GoldRecordList onEditRecord={handleEditRecord} />
+            <AddGoldRecord 
+              editRecord={editingRecord} 
+              onClose={handleCloseDialog} 
+            />
+          </main>
+          
+          <FloatingShareButton />
+          
+          <footer className="bg-navy-dark text-white py-4 text-center text-sm" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+            <div className="container mx-auto">
+              <p>&copy; {new Date().getFullYear()} {translations.appName}. {translations.footer}</p>
+            </div>
+          </footer>
+        </div>
+      )}
     </GoldProvider>
   );
 };
