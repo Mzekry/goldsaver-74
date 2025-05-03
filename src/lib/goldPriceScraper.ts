@@ -47,8 +47,8 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
         lastUpdated: new Date()
       };
     } else {
-      console.error("Invalid response format from gold.g.apised.com API");
       console.clear();
+      console.error("Invalid response format from gold.g.apised.com API");
       console.error(response.data.metal_prices.XAU.price_24k);
       console.error(response.data.status);
       console.error(response);
