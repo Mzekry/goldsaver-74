@@ -51,7 +51,7 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
       console.clear();
       console.error(response.data.metal_prices.XAU.price_24k);
       console.error(response.data.status);
-      console.error(response.data);
+      console.error(response);
       return null;
     }
   } catch (error) {
