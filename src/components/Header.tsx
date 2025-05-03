@@ -39,11 +39,11 @@ export const Header = () => {
         <div className="w-full bg-navy-light rounded-lg p-3 text-center sm:text-left">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <div className="text-xs text-gray-300">21K</div>
+              <div className="text-xs text-gray-300">{translations.k21}</div>
               <div className="text-lg font-bold">{formatCurrency(goldPrices.k21)}/g</div>
             </div>
             <div>
-              <div className="text-xs text-gray-300">24K</div>
+              <div className="text-xs text-gray-300">{translations.k24}</div>
               <div className="text-lg font-bold">{formatCurrency(goldPrices.k24)}/g</div>
             </div>
           </div>

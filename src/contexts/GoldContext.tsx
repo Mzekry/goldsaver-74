@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { v4 as uuidv4 } from "uuid";
@@ -63,7 +64,18 @@ const translationsData = {
     usingEstimatedPricesDesc: "Couldn't fetch prices. Using estimates: 21K: {k21} EGP, 24K: {k24} EGP",
     share: "Track your gold investments with Gold Tracker!",
     copyLink: "Copy this link to share",
-    footer: "All rights reserved."
+    footer: "All rights reserved.",
+    goldType: {
+      Jewelry: "Jewelry",
+      Coin: "Coin",
+      Bar: "Bar",
+      Pound: "Pound",
+      Sabikah: "Sabikah"
+    },
+    karat: "K",
+    gram: "g of",
+    k21: "21K",
+    k24: "24K"
   },
   ar: {
     appName: "سجل الذهب",
@@ -98,7 +110,18 @@ const translationsData = {
     usingEstimatedPricesDesc: "تعذر جلب الأسعار. استخدام تقديرات: عيار ٢١: {k21} جنيه، عيار ٢٤: {k24} جنيه",
     share: "تتبع استثمارات الذهب الخاصة بك مع سجل الذهب!",
     copyLink: "انسخ هذا الرابط للمشاركة",
-    footer: "جميع الحقوق محفوظة."
+    footer: "جميع الحقوق محفوظة.",
+    goldType: {
+      Jewelry: "مجوهرات",
+      Coin: "عملات",
+      Bar: "سبائك",
+      Pound: "جنيه",
+      Sabikah: "سبيكة"
+    },
+    karat: "عيار",
+    gram: "جرام من",
+    k21: "عيار ٢١",
+    k24: "عيار ٢٤"
   }
 };
 

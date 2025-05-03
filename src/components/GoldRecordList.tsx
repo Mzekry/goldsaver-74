@@ -66,10 +66,10 @@ export const GoldRecordList = ({ onEditRecord }: GoldRecordListProps) => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold">
-                        {record.quantity}g {language === 'ar' ? 'من الذهب عيار' : 'of'} {record.karat}K {language === 'en' ? record.type : 
-                          record.type === "Jewelry" ? 'مجوهرات' : 
-                          record.type === "Coin" ? 'عملات' : 
-                          record.type === "Bar" ? 'سبائك' : record.type}
+                        {record.quantity} {language === 'ar' ? translations.gram : translations.gram} {' '}
+                        {language === 'ar' ? translations.karat : ''} {record.karat}
+                        {language === 'en' ? translations.karat : ''} {' '}
+                        {language === 'en' ? record.type : translations.goldType[record.type]}
                       </h3>
                       {record.purchaseDate && (
                         <p className="text-sm text-muted-foreground">
