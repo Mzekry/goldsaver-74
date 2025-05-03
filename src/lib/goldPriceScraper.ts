@@ -24,7 +24,7 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
     const config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: 'https://gold.g.apised.com/v1/latest?metals=XAU,XAG,XPT,XPD&base_currency=EGP&currencies=EGP,EUR,KWD,GBP,USD&weight_unit=gram',
+      url: 'https://gold.g.apised.com/v1/latest?metals=XAU&base_currency=EGP&weight_unit=gram',
       headers: { 
         'x-api-key': 'sk_382C6f3E73d0e3B68c625776BA59cFfb8BcDb36ccD613126'
       }
@@ -33,11 +33,11 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
     const response = await axios.request(config);
     
     // Parse the API response to extract 24K and 21K gold prices
-    if (response.data && response.data.success) {
+    if (response.data && response.status.success) {
       console.log("Successfully fetched prices from gold.g.apised.com API");
       
       // XAU represents pure gold (24K)
-      const k24Price = Math.round(response.data.rates.XAU.EGP);
+      const k24Price = Math.round(response.data.metal_prices.XAU.price_24k);
       // 21K is 87.5% pure (21/24)
       const k21Price = Math.round(k24Price * (21/24));
       
