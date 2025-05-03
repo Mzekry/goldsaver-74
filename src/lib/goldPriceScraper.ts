@@ -51,7 +51,7 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
       console.error("Invalid response format from gold.g.apised.com API");
       console.error(response.data.metal_prices.XAU.price_24k);
       console.error(response.data.status);
-      console.error(response.tostring());
+      console.error(config);
       return null;
     }
   } catch (error) {
