@@ -144,8 +144,8 @@ export async function getGoldPrices(): Promise<GoldPrice> {
     console.error("Error getting gold prices:", error);
     // Return fallback prices in case of any unhandled errors
     return {
-      k21: 00.00,
-      k24: 00.00,
+      k21: 0,
+      k24: 0,
       lastUpdated: new Date()
     };
   }
