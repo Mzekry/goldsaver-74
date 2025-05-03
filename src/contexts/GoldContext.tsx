@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { GoldRecord, GoldPrice } from "@/types/gold";
 import { useToast } from "@/components/ui/use-toast";
@@ -81,7 +82,8 @@ const translationsData = {
     karat: "K",
     gram: "g of",
     k21: "21K",
-    k24: "24K"
+    k24: "24K",
+    myGoldWealthAnalysis: "My Gold Wealth Analysis" // Added new key
   },
   ar: {
     appName: "سجل الذهب",
@@ -127,7 +129,8 @@ const translationsData = {
     karat: "عيار",
     gram: "جرام من",
     k21: "عيار ٢١",
-    k24: "عيار ٢٤"
+    k24: "عيار ٢٤",
+    myGoldWealthAnalysis: "تحليل ثروتي من الذهب" // Added new key with Arabic translation
   }
 };
 

@@ -17,51 +17,58 @@ export const GoldSummary = () => {
   const isProfit = difference >= 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <Card className="card-highlight">
-        <CardContent className="p-6">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.totalPurchaseValue}</h3>
-          <p className="text-2xl font-bold">{formatCurrency(totalPurchaseValue)}</p>
-        </CardContent>
-      </Card>
+    <div className="mb-6">
+      <h2 className="text-xl font-semibold text-navy-dark text-center mb-4">
+        {translations.myGoldWealthAnalysis}
+      </h2>
+      <div className="mt-1 h-1 w-24 bg-gold mx-auto rounded-full mb-4"></div>
       
-      <Card className="card-highlight">
-        <CardContent className="p-6">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.currentValue}</h3>
-          <p className="text-2xl font-bold">{formatCurrency(currentValue)}</p>
-          <div className="mt-2 flex items-center text-sm">
-            <span className={isProfit ? 'text-green-600' : 'text-red-600'}>
-              {isProfit ? '+' : ''}{formatCurrency(difference)} ({percentChange.toFixed(2)}%)
-            </span>
-          </div>
-          <Progress
-            value={totalPurchaseValue > 0 ? (currentValue / totalPurchaseValue) * 100 : 0}
-            className="h-1 mt-2"
-          />
-        </CardContent>
-      </Card>
-      
-      <Card className="card-highlight">
-        <CardContent className="p-6">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.zakatCalculation}</h3>
-          {isZakatEligible ? (
-            <>
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm text-green-600 font-medium">{translations.eligibleForZakat}</span>
-              </div>
-              <p className="text-2xl font-bold">{formatCurrency(zakatAmount)}</p>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-              <span className="text-sm text-amber-600">
-                {translations.notEligibleForZakat}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <Card className="card-highlight">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.totalPurchaseValue}</h3>
+            <p className="text-2xl font-bold">{formatCurrency(totalPurchaseValue)}</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="card-highlight">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.currentValue}</h3>
+            <p className="text-2xl font-bold">{formatCurrency(currentValue)}</p>
+            <div className="mt-2 flex items-center text-sm">
+              <span className={isProfit ? 'text-green-600' : 'text-red-600'}>
+                {isProfit ? '+' : ''}{formatCurrency(difference)} ({percentChange.toFixed(2)}%)
               </span>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <Progress
+              value={totalPurchaseValue > 0 ? (currentValue / totalPurchaseValue) * 100 : 0}
+              className="h-1 mt-2"
+            />
+          </CardContent>
+        </Card>
+        
+        <Card className="card-highlight">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{translations.zakatCalculation}</h3>
+            {isZakatEligible ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm text-green-600 font-medium">{translations.eligibleForZakat}</span>
+                </div>
+                <p className="text-2xl font-bold">{formatCurrency(zakatAmount)}</p>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <span className="text-sm text-amber-600">
+                  {translations.notEligibleForZakat}
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

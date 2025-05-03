@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useGold } from "@/contexts/GoldContext";
 import { GoldRecord, GoldType } from "@/types/gold";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface AddGoldRecordProps {
   editRecord?: GoldRecord;
@@ -18,6 +21,8 @@ interface AddGoldRecordProps {
 
 export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
   const { addRecord, updateRecord, translations, language } = useGold();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(!!editRecord);
   
   const isEditing = !!editRecord;
@@ -85,6 +90,19 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
     onClose();
   };
 
+  const handleButtonClick = () => {
+    if (!user) {
+      // Redirect to auth page if user is not authenticated
+      toast({
+        title: language === 'ar' ? "تسجيل الدخول مطلوب" : "Authentication Required",
+        description: language === 'ar' ? "يرجى تسجيل الدخول لإضافة سجل ذهب جديد" : "Please sign in to add a new gold record",
+      });
+      navigate('/auth');
+    } else {
+      setOpen(true);
+    }
+  };
+
   return (
     <>
       {!isEditing && (
@@ -93,9 +111,10 @@ export const AddGoldRecord = ({ editRecord, onClose }: AddGoldRecordProps) => {
             <div className="flex justify-center mt-6 mb-10">
               <Button 
                 className="flex items-center gap-2 bg-gold hover:bg-gold-dark text-white shadow-lg py-6 px-8"
+                onClick={handleButtonClick}
               >
                 <Plus className="h-5 w-5" />
-                <span>Add New Record</span>
+                <span>{language === 'ar' ? 'إضافة سجل جديد' : 'Add New Record'}</span>
               </Button>
             </div>
           </DialogTrigger>
