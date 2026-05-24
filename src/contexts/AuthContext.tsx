@@ -18,6 +18,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function translateAuthError(msg: string): string {
+  if (msg.includes('Invalid login credentials'))  return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+  if (msg.includes('Email not confirmed'))         return 'يرجى تأكيد بريدك الإلكتروني أولاً.';
+  if (msg.includes('User already registered'))     return 'هذا البريد الإلكتروني مسجل بالفعل.';
+  if (msg.includes('Password should be'))          return 'كلمة المرور يجب أن تكون ٦ أحرف على الأقل.';
+  if (msg.includes('Unable to validate'))          return 'تعذّر التحقق من البيانات، حاول مجدداً.';
+  if (msg.includes('rate limit'))                  return 'طلبات كثيرة جداً، انتظر قليلاً ثم حاول.';
+  if (msg.includes('network') || msg.includes('fetch')) return 'تعذّر الاتصال بالخادم، تحقق من الإنترنت.';
+  return msg;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -35,13 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (event === 'SIGNED_IN') {
           toast({
-            title: 'Signed in successfully',
-            description: 'Welcome to Gold Tracker!',
+            title: 'تم تسجيل الدخول بنجاح',
+            description: 'مرحباً بك في سجل الذهب!',
           });
         } else if (event === 'SIGNED_OUT') {
           toast({
-            title: 'Signed out successfully',
-            description: 'See you again soon!',
+            title: 'تم تسجيل الخروج',
+            description: 'إلى اللقاء!',
           });
         }
       }
@@ -71,8 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       setError(err.message);
       toast({
-        title: 'Sign in failed',
-        description: err.message,
+        title: 'فشل تسجيل الدخول',
+        description: translateAuthError(err.message),
         variant: 'destructive',
       });
     } finally {
@@ -89,14 +100,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(error.message);
       }
       toast({
-        title: 'Registration successful',
-        description: 'Please check your email for the confirmation link.',
+        title: 'تم إنشاء الحساب بنجاح',
+        description: 'يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.',
       });
     } catch (err: any) {
       setError(err.message);
       toast({
-        title: 'Sign up failed',
-        description: err.message,
+        title: 'فشل إنشاء الحساب',
+        description: translateAuthError(err.message),
         variant: 'destructive',
       });
     } finally {
@@ -115,8 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       setError(err.message);
       toast({
-        title: 'Sign out failed',
-        description: err.message,
+        title: 'فشل تسجيل الخروج',
+        description: translateAuthError(err.message),
         variant: 'destructive',
       });
     } finally {
@@ -140,8 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       setError(err.message);
       toast({
-        title: 'Google sign in failed',
-        description: err.message,
+        title: 'فشل تسجيل الدخول بـ Google',
+        description: translateAuthError(err.message),
         variant: 'destructive',
       });
       setLoading(false);

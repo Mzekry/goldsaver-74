@@ -81,8 +81,8 @@ export default function Index() {
               <div className="relative floating-gold">
                 <div className="w-64 h-64 flex items-center justify-center bg-surface rounded-3xl shadow-[0px_8px_24px_rgba(10,31,68,0.06)] border border-outline-variant/30 relative overflow-hidden">
                   <img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXS2m55rvqMUk48_cCXgSkRNR8dpgEUyYtiRcvJ47WBFOP8zW_HfB2XjJUb9jlSk0s08uo31TCMme11bhMkNhl2_4BtX7xx9-b5YPy-c7P67Wi8ffUgPi8LnxqSVtp-QVdCbImms7_fQz6ENkoIYFiYFy1tTArHcCoMq6RRNzzFU3F415xHNsSiu6ld3aFE74bxtBXLjPEECPiYy0aMY7DuRj2l4YEphXeU6SSx46jM7jJQJk6mMXmDJ1Ou8Fixqf3ZXv_6N-p5yc"
-                    alt="خزنة ذهب"
+                    src={LOGO_URL}
+                    alt="سجل الذهب"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-4 right-4 bg-primary-container p-3 rounded-xl shadow-lg">
