@@ -61,11 +61,22 @@ export default function Settings() {
         {/* User Profile Card */}
         <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0px_8px_24px_rgba(10,31,68,0.06)] flex items-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-full overflow-hidden bg-surface-container-high flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: 36 }}>person</span>
+            {user?.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata.full_name ?? 'profile'}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: 36 }}>person</span>
+            )}
           </div>
           <div className="text-right">
-            <h2 className="font-headline-md text-headline-md text-on-surface">{user?.email ?? 'مستخدم سجل الذهب'}</h2>
-            <p className="font-label-md text-label-md text-on-surface-variant">عضوية بريميوم</p>
+            <h2 className="font-headline-md text-headline-md text-on-surface">
+              {user?.user_metadata?.full_name ?? user?.email ?? 'مستخدم سجل الذهب'}
+            </h2>
+            <p className="font-label-md text-label-md text-on-surface-variant">{user?.email}</p>
           </div>
         </div>
 
