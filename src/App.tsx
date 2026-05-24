@@ -12,6 +12,7 @@ import Market from "./pages/Market";
 import Wallet from "./pages/Wallet";
 import Settings from "./pages/Settings";
 import AddRecord from "./pages/AddRecord";
+import Feedback from "./pages/Feedback";
 import Splash from "./pages/Splash";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GoldProvider } from "./contexts/GoldContext";
@@ -62,6 +63,7 @@ function AppRoutes() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/add-record" element={<AddRecord />} />
                 <Route path="/add-record/:id" element={<AddRecord />} />
+                <Route path="/feedback" element={<Feedback />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </GoldProvider>
