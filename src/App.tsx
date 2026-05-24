@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
@@ -19,8 +19,29 @@ import { useAuth } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
+// Redirect already-logged-in users away from /auth
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // Demo mode: bypass auth — remove this comment and restore the guard when Supabase is ready
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary animate-spin text-4xl">progress_activity</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   return <>{children}</>;
 }
 
@@ -28,7 +49,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/splash" element={<Splash />} />
-      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/auth" element={<AuthGuard><AuthPage /></AuthGuard>} />
       <Route
         path="/*"
         element={
