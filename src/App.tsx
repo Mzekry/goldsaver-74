@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import AddRecord from "./pages/AddRecord";
 import Feedback from "./pages/Feedback";
 import Splash from "./pages/Splash";
+import Privacy from "./pages/Privacy";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GoldProvider } from "./contexts/GoldContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -50,6 +51,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/splash" element={<Splash />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="/auth" element={<AuthGuard><AuthPage /></AuthGuard>} />
       <Route
         path="/*"
