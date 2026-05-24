@@ -95,18 +95,3 @@
   }
 }
 
-@layer components {
-  .gold-gradient {
-    @apply bg-gold-gradient text-navy-dark font-semibold;
-  }
-  
-  .card-highlight {
-    @apply relative overflow-hidden;
-  }
-  
-  .card-highlight::after {
-    content: '';
-    @apply absolute inset-0 bg-shimmer bg-[length:200%_100%] animate-shimmer;
-    pointer-events: none;
-  }
-}

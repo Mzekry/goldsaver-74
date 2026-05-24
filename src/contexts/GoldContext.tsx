@@ -31,10 +31,66 @@ interface GoldContextType {
 }
 
 const defaultGoldPrices: GoldPrice = {
-  k21: 3700, // Default price for 21K gold per gram in EGP
-  k24: 4200, // Default price for 24K gold per gram in EGP
+  k21: 3485,
+  k24: 3850,
   lastUpdated: new Date(),
 };
+
+// Mock records shown when no user is logged in (demo mode)
+const MOCK_RECORDS: GoldRecord[] = [
+  {
+    id: 'mock-1',
+    type: 'Sabikah',
+    karat: 24,
+    quantity: 20,
+    purchasePrice: 77000,
+    purchaseDate: new Date('2023-09-15'),
+    shopName: 'BTC',
+    createdAt: new Date('2023-09-15'),
+    updatedAt: new Date('2023-09-15'),
+  },
+  {
+    id: 'mock-2',
+    type: 'Pound',
+    karat: 21,
+    quantity: 8,
+    purchasePrice: 28000,
+    purchaseDate: new Date('2023-09-08'),
+    shopName: 'SAM',
+    createdAt: new Date('2023-09-08'),
+    updatedAt: new Date('2023-09-08'),
+  },
+  {
+    id: 'mock-3',
+    type: 'Sabikah',
+    karat: 24,
+    quantity: 50,
+    purchasePrice: 185000,
+    purchaseDate: new Date('2023-09-01'),
+    createdAt: new Date('2023-09-01'),
+    updatedAt: new Date('2023-09-01'),
+  },
+  {
+    id: 'mock-4',
+    type: 'Pound',
+    karat: 21,
+    quantity: 4,
+    purchasePrice: 13000,
+    purchaseDate: new Date('2023-08-22'),
+    createdAt: new Date('2023-08-22'),
+    updatedAt: new Date('2023-08-22'),
+  },
+  {
+    id: 'mock-5',
+    type: 'Pound',
+    karat: 21,
+    quantity: 6.5,
+    purchasePrice: 21000,
+    purchaseDate: new Date('2023-08-15'),
+    createdAt: new Date('2023-08-15'),
+    updatedAt: new Date('2023-08-15'),
+  },
+];
 
 // Translations for all text in the app
 const translationsData = {
@@ -143,7 +199,7 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [goldPrices, setGoldPrices] = useState<GoldPrice>(defaultGoldPrices);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<'en' | 'ar'>('en');
+  const [language, setLanguage] = useState<'en' | 'ar'>('ar');
 
   // Use translations based on the current language
   const translations = translationsData[language];
@@ -169,12 +225,12 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Load gold records when user changes
+  // Load gold records when user changes; use mock data in demo mode
   useEffect(() => {
     if (user) {
       loadRecords();
     } else {
-      setRecords([]);
+      setRecords(MOCK_RECORDS);
     }
   }, [user]);
 
@@ -221,20 +277,27 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addRecord = async (record: Omit<GoldRecord, "id" | "createdAt" | "updatedAt">) => {
+    // Demo mode: add locally without Supabase
     if (!user) {
+      const newRecord: GoldRecord = {
+        ...record,
+        id: `demo-${Date.now()}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setRecords((prev) => [...prev, newRecord]);
       toast({
-        title: "Authentication required",
-        description: "Please sign in to add gold records",
-        variant: "destructive",
+        title: translations.recordAdded,
+        description: translations.recordAddedDesc.replace("{quantity}", record.quantity.toString()).replace("{karat}", record.karat.toString()),
       });
       return;
     }
-    
+
     try {
       setIsLoading(true);
       const newRecord = await addGoldRecordToSupabase(record);
       setRecords((prevRecords) => [...prevRecords, newRecord]);
-      toast({ 
+      toast({
         title: translations.recordAdded,
         description: translations.recordAddedDesc.replace("{quantity}", record.quantity.toString()).replace("{karat}", record.karat.toString()),
       });
@@ -251,24 +314,24 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateRecord = async (id: string, updatedFields: Partial<GoldRecord>) => {
+    // Demo mode: update locally without Supabase
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to update gold records",
-        variant: "destructive",
-      });
+      setRecords((prev) =>
+        prev.map((r) => r.id === id ? { ...r, ...updatedFields, updatedAt: new Date() } : r)
+      );
+      toast({ title: translations.recordUpdated, description: translations.recordUpdatedDesc });
       return;
     }
-    
+
     try {
       setIsLoading(true);
       const updatedRecord = await updateGoldRecordInSupabase(id, updatedFields);
-      setRecords((prevRecords) => 
-        prevRecords.map((record) => 
+      setRecords((prevRecords) =>
+        prevRecords.map((record) =>
           record.id === id ? updatedRecord : record
         )
       );
-      toast({ 
+      toast({
         title: translations.recordUpdated,
         description: translations.recordUpdatedDesc,
       });
@@ -285,12 +348,11 @@ export const GoldProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteRecord = async (id: string) => {
+    // Demo mode: delete locally without Supabase
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to delete gold records",
-        variant: "destructive",
-      });
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+      toast({ title: translations.recordDeleted, description: translations.recordDeletedDesc });
+      return;
       return;
     }
     

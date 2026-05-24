@@ -1,14 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html dir="rtl" lang="ar">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gold-value-master</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
-    <meta property="og:image" content="/og-image.png" />
+    <title>سجل الذهب</title>
+    <meta name="description" content="تتبع استثماراتك في الذهب" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+      body {
+        font-family: 'Manrope', sans-serif;
+        background-color: #f8f9fa;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .glass-header {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .ios-shadow {
+        box-shadow: 0px 8px 24px rgba(10, 31, 68, 0.06);
+      }
+      .glass-background {
+        background: radial-gradient(circle at 50% -20%, rgba(212, 175, 55, 0.08), transparent 70%);
+      }
+      .floating-gold {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+      }
+      .live-indicator {
+        animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse-soft {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      .inset-divider {
+        position: relative;
+      }
+      .inset-divider::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 24px;
+        right: 72px;
+        height: 1px;
+        background-color: #edeeef;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      input:focus {
+        outline: none;
+        box-shadow: none;
+      }
+    </style>
   </head>
-
   <body>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->

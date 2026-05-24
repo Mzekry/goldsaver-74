@@ -1,70 +1,95 @@
 
 /**
  * Gold Price Fetcher Utility
- * This utility fetches gold prices from the gold.g.apised.com API
- * with fallback to scraping from egypt.gold-era.com
+ * Primary: gold-era.eg (via WordPress REST API — CORS-enabled)
+ * Fallback: gold.g.apised.com API
  */
 
 import { GoldPrice } from "@/types/gold";
 import axios from "axios";
 
-interface ScrapedGoldPrices {
-  k24: number;
-  k21: number;
-  timestamp: Date;
+/**
+ * Primary method: Fetch gold prices from gold-era.eg via WordPress REST API
+ * Returns buy prices for 24K and 21K gold (EGP per gram)
+ */
+async function fetchPricesFromGoldEra(): Promise<GoldPrice | null> {
+  try {
+    console.log("Fetching gold prices from gold-era.eg...");
+
+    const response = await fetch(
+      "https://gold-era.eg/wp-json/wp/v2/pages?slug=gold-price&_fields=content"
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data || !data[0]?.content?.rendered) {
+      console.error("Unexpected response structure from gold-era.eg");
+      return null;
+    }
+
+    const html: string = data[0].content.rendered;
+
+    // Parse buy prices from the Ninja Table rows
+    const k24Match = html.match(/Local Gold 24<\/td><td>([\d,.]+)<\/td>/);
+    const k21Match = html.match(/Local Gold 21<\/td><td>([\d,.]+)<\/td>/);
+
+    if (!k24Match || !k21Match) {
+      console.error("Could not find price data in gold-era.eg response");
+      return null;
+    }
+
+    const k24 = Math.round(parseFloat(k24Match[1].replace(/,/g, "")));
+    const k21 = Math.round(parseFloat(k21Match[1].replace(/,/g, "")));
+
+    console.log(`gold-era.eg prices — 24K: ${k24} EGP, 21K: ${k21} EGP`);
+
+    return {
+      k24,
+      k21,
+      lastUpdated: new Date(),
+    };
+  } catch (error) {
+    console.error("Error fetching from gold-era.eg:", error);
+    return null;
+  }
 }
 
 /**
- * Primary method: Fetch gold prices from gold.g.apised.com API
+ * Fallback method: Fetch from gold.g.apised.com API
  */
 async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
   try {
-    console.log("Fetching gold prices from gold.g.apised.com API...");
-    
+    console.log("Falling back to gold.g.apised.com API...");
+
     const config = {
-      method: 'get',
+      method: "get",
       maxBodyLength: Infinity,
-      url: 'https://gold.g.apised.com/v1/latest?metals=XAU&base_currency=EGP&weight_unit=gram',
-      headers: { 
-        'x-api-key': 'sk_382C6f3E73d0e3B68c625776BA59cFfb8BcDb36ccD613126'
-      }
+      url: "https://gold.g.apised.com/v1/latest?metals=XAU&base_currency=EGP&weight_unit=gram",
+      headers: {
+        "x-api-key": "sk_382C6f3E73d0e3B68c625776BA59cFfb8BcDb36ccD613126",
+      },
     };
 
     const response = await axios.request(config);
-    
-    // Parse the API response to extract 24K and 21K gold prices
-    if (response.data && response.data.status === "success") {
-      console.log("Successfully fetched prices from gold.g.apised.com API");
-      
-      // Extract the prices from the correct path in the response
-      if (response.data.data && 
-          response.data.data.metal_prices && 
-          response.data.data.metal_prices.XAU) {
-        
-        const metalPrices = response.data.data.metal_prices.XAU;
-        
-        // Use the direct values from the API
-        const k24Price = Math.round(metalPrices.price_24k);
-        const k21Price = Math.round(metalPrices.price_21k);
-        
-        console.log(`API prices - 24K: ${k24Price} EGP, 21K: ${k21Price} EGP`);
-        
-        return {
-          k24: k24Price,
-          k21: k21Price,
-          lastUpdated: new Date()
-        };
-      } else {
-        console.error("Missing expected data structure in API response");
-        console.log("Response data:", JSON.stringify(response.data, null, 2));
-        return null;
-      }
-    } else {
-      console.error("Invalid response from gold.g.apised.com API");
-      console.log("Response status:", response.status);
-      console.log("Response data:", JSON.stringify(response.data, null, 2));
-      return null;
+
+    if (
+      response.data?.status === "success" &&
+      response.data?.data?.metal_prices?.XAU
+    ) {
+      const metalPrices = response.data.data.metal_prices.XAU;
+      const k24 = Math.round(metalPrices.price_24k);
+      const k21 = Math.round(metalPrices.price_21k);
+
+      console.log(`API fallback prices — 24K: ${k24} EGP, 21K: ${k21} EGP`);
+
+      return { k24, k21, lastUpdated: new Date() };
     }
+
+    return null;
   } catch (error) {
     console.error("Error fetching from gold.g.apised.com API:", error);
     return null;
@@ -72,91 +97,26 @@ async function fetchPricesFromAPI(): Promise<GoldPrice | null> {
 }
 
 /**
- * Fallback method: Scrape gold prices from egypt.gold-era.com
- */
-export async function scrapeGoldPrices(): Promise<ScrapedGoldPrices | null> {
-  try {
-    console.log("Falling back to scraping from egypt.gold-era.com...");
-    
-    // Fetch the HTML content from the website
-    const response = await fetch("https://egypt.gold-era.com/gold-price/", {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch: ${response.status}`);
-    }
-
-    const html = await response.text();
-    console.log("Retrieved HTML content, parsing prices...");
-
-    // Extract prices using regex patterns
-    const k24PriceMatch = html.match(/24 قيراط<\/td>\s*<td[^>]*>(\d+,?\d*)/);
-    const k21PriceMatch = html.match(/21 قيراط<\/td>\s*<td[^>]*>(\d+,?\d*)/);
-
-    if (!k24PriceMatch || !k21PriceMatch) {
-      console.error("Could not find price data in the HTML content");
-      return null;
-    }
-
-    // Parse the matched prices
-    const k24Price = parseInt(k24PriceMatch[1].replace(/,/g, ""), 10);
-    const k21Price = parseInt(k21PriceMatch[1].replace(/,/g, ""), 10);
-
-    console.log(`Scraped prices - 24K: ${k24Price} EGP, 21K: ${k21Price} EGP`);
-    
-    return {
-      k24: k24Price,
-      k21: k21Price,
-      timestamp: new Date()
-    };
-  } catch (error) {
-    console.error("Error scraping gold prices:", error);
-    return null;
-  }
-}
-
-/**
- * Main function to get gold prices with a multi-level fallback mechanism
+ * Main function: gold-era.eg primary → API fallback → hardcoded default
  */
 export async function getGoldPrices(): Promise<GoldPrice> {
   try {
-    // Try the API first (primary method)
-    console.log("Attempting to get gold prices...");
-    const apiPrices = await fetchPricesFromAPI();
-    
-    if (apiPrices) {
-      return apiPrices;
-    }
-    
-    // If API fails, try scraping (secondary method)
-    console.log("API failed, falling back to scraping...");
-    const scrapedPrices = await scrapeGoldPrices();
-    
-    if (scrapedPrices) {
-      return {
-        k24: scrapedPrices.k24,
-        k21: scrapedPrices.k21,
-        lastUpdated: scrapedPrices.timestamp
-      };
-    }
-    
-    // If both methods fail, return fallback prices
-    console.log("All methods failed, using fallback prices");
-    return {
-      k21: 3700,
-      k24: 4200,
-      lastUpdated: new Date()
-    };
+    const primary = await fetchPricesFromGoldEra();
+    if (primary) return primary;
+
+    console.log("Primary source failed, trying API fallback...");
+    const fallback = await fetchPricesFromAPI();
+    if (fallback) return fallback;
+
+    console.log("All sources failed, using default prices");
+    return { k21: 3700, k24: 4200, lastUpdated: new Date() };
   } catch (error) {
-    console.error("Error getting gold prices:", error);
-    // Return fallback prices in case of any unhandled errors
-    return {
-      k21: 0,
-      k24: 0,
-      lastUpdated: new Date()
-    };
+    console.error("Unexpected error in getGoldPrices:", error);
+    return { k21: 0, k24: 0, lastUpdated: new Date() };
   }
+}
+
+/** @deprecated kept for compatibility — use getGoldPrices() instead */
+export async function scrapeGoldPrices() {
+  return getGoldPrices();
 }
