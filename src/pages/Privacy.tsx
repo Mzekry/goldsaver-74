@@ -8,7 +8,7 @@ export default function Privacy() {
           <span style={{ color: '#D4AF37', fontSize: 28 }}>🔒</span>
         </div>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0A1F44', marginBottom: 8 }}>سياسة الخصوصية</h1>
-        <p style={{ color: '#6b7280', fontSize: 14 }}>سجل الذهب — آخر تحديث: يونيو 2025</p>
+        <p style={{ color: '#6b7280', fontSize: 14 }}>سجل الذهب — آخر تحديث: مايو 2026</p>
       </div>
 
       <Section title="مقدمة">
@@ -104,7 +104,7 @@ export default function Privacy() {
 
       {/* Footer */}
       <div style={{ textAlign: 'center', marginTop: 56, paddingTop: 24, borderTop: '1px solid #e5e7eb' }}>
-        <p style={{ color: '#9ca3af', fontSize: 13 }}>© 2025 سجل الذهب — جميع الحقوق محفوظة</p>
+        <p style={{ color: '#9ca3af', fontSize: 13 }}>© 2026 سجل الذهب — جميع الحقوق محفوظة</p>
       </div>
     </div>
   );
