@@ -16,6 +16,7 @@ import Feedback from "./pages/Feedback";
 import Splash from "./pages/Splash";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import DeleteAccount from "./pages/DeleteAccount";
 import { AuthProvider } from "./contexts/AuthContext";
 import { GoldProvider } from "./contexts/GoldContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/splash" element={<Splash />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/delete-account" element={<DeleteAccount />} />
       <Route path="/auth" element={<AuthGuard><AuthPage /></AuthGuard>} />
       <Route
         path="/*"
