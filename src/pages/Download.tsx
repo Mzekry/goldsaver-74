@@ -5,12 +5,15 @@ import { TrendingUp, Calculator, ShieldCheck, Coins, Sparkles } from "lucide-rea
  * Arabic (RTL) download landing page — /download
  *
  * On-brand marketing page for "سجل الذهب": navy + gold palette, prominent logo
- * and title, app screenshots, and store-download CTAs. iOS links to the live
- * App Store listing; Android is shown as "قريباً" until the Play listing is live.
+ * and title, app screenshots, and store-download CTAs. Both stores are live —
+ * iOS links to the App Store listing, Android to the Google Play listing.
  */
 
 const APP_STORE_URL =
   "https://apps.apple.com/eg/app/gold-wealth-%D8%B3%D8%AC%D9%84-%D8%A7%D9%84%D8%B0%D9%87%D8%A8/id6772691765";
+
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.lifekit.goldwealth";
 
 const NAVY = "#0A1F44";
 const GOLD = "#D4AF37";
@@ -122,11 +125,11 @@ export default function Download() {
                   />
                 </a>
 
-                <ComingSoonPlayBadge />
+                <PlayBadge />
               </div>
 
               <p className="mt-4 text-sm text-blue-100/60">
-                متاح الآن على iPhone — ونسخة أندرويد قادمة قريبًا.
+                متاح الآن على iPhone و Android — حمّله من متجرك المفضّل.
               </p>
             </div>
 
@@ -228,7 +231,7 @@ export default function Download() {
                 className="h-[54px] w-auto"
               />
             </a>
-            <ComingSoonPlayBadge />
+            <PlayBadge />
           </div>
         </div>
       </section>
@@ -286,16 +289,18 @@ function PhoneFrame({ src }: { src: string }) {
   );
 }
 
-/* ───────── Google Play "coming soon" badge ───────── */
-function ComingSoonPlayBadge() {
+/* ───────── Google Play badge (live link) ───────── */
+function PlayBadge() {
   return (
-    <div className="relative inline-flex cursor-default select-none" aria-disabled="true">
-      {/* "قريباً" ribbon */}
-      <span className="absolute -top-2 -left-2 z-10 rounded-full bg-[#D4AF37] px-2.5 py-0.5 text-[11px] font-bold text-[#0A1F44] shadow">
-        قريبًا
-      </span>
+    <a
+      href={PLAY_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="احصل عليه من Google Play"
+      className="transition-transform duration-200 hover:scale-105 focus:outline-none"
+    >
       <div
-        className="flex h-[54px] items-center gap-3 rounded-[10px] border border-[#9aa0a6] bg-black px-4 opacity-70"
+        className="flex h-[54px] items-center gap-3 rounded-[10px] border border-[#9aa0a6] bg-black px-4"
         dir="ltr"
       >
         {/* Google Play triangle */}
@@ -306,12 +311,12 @@ function ComingSoonPlayBadge() {
           <path fill="#FFC700" d="M308 174l84 48c14 8 14 28 0 36l-84 48-58-58 58-58z" />
         </svg>
         <div className="flex flex-col items-start leading-none">
-          <span className="text-[10px] font-medium text-white/80">قريبًا على</span>
+          <span className="text-[10px] font-medium text-white/80">احصل عليه من</span>
           <span className="mt-0.5 text-lg font-semibold tracking-wide text-white">
             Google Play
           </span>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
