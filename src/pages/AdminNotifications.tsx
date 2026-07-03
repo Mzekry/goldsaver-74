@@ -74,6 +74,8 @@ export default function AdminNotifications() {
   const [zakat, setZakat] = useState<'any' | 'set' | 'unset'>('any');
   const [region, setRegion] = useState<'any' | 'egypt' | 'gulf'>('any');
   const [target, setTarget] = useState('/');
+  const [testMode, setTestMode] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
   const [sending, setSending] = useState(false);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -106,6 +108,7 @@ export default function AdminNotifications() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!secret || !title.trim() || !body.trim()) return;
+    if (testMode && !testEmail.trim()) return;
     setSending(true);
     try {
       const res = await fetch(`${FUNCTIONS_URL}/send-campaign`, {
@@ -115,9 +118,15 @@ export default function AdminNotifications() {
           title: title.trim(),
           body: body.trim(),
           target,
-          platform: platform === 'any' ? undefined : platform,
-          appVersion: appVersion.trim() || undefined,
-          segments: { records, activity, zakat, region },
+          // Test mode bypasses platform/version/segment filters entirely on
+          // the backend, so there's no point sending them along.
+          ...(testMode
+            ? { testEmail: testEmail.trim() }
+            : {
+                platform: platform === 'any' ? undefined : platform,
+                appVersion: appVersion.trim() || undefined,
+                segments: { records, activity, zakat, region },
+              }),
         }),
       });
       const json = await res.json();
@@ -132,7 +141,9 @@ export default function AdminNotifications() {
       }
       toast({
         title: 'تم الإرسال',
-        description: `تم استهداف ${json.resolvedCount} مستخدم`,
+        description: testMode
+          ? `تم الإرسال إلى ${testEmail.trim()} فقط`
+          : `تم استهداف ${json.resolvedCount} مستخدم`,
       });
       setTitle('');
       setBody('');
@@ -190,10 +201,35 @@ export default function AdminNotifications() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl border border-primary/30 bg-primary-container/5 p-4">
+            <label className="flex items-center gap-2 cursor-pointer mb-2">
+              <input
+                type="checkbox"
+                checked={testMode}
+                onChange={(e) => setTestMode(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="font-label-md text-label-md font-bold text-primary">وضع الاختبار — إرسال لي فقط</span>
+            </label>
+            <p className="font-label-sm text-label-sm text-on-surface-variant mb-3">
+              يتجاهل النظام/الإصدار/الفئات المستهدَفة ويرسل لهذا الحساب فقط.
+            </p>
+            {testMode && (
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="بريدك الإلكتروني المسجّل في التطبيق"
+                required={testMode}
+                className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-3 text-right focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+              />
+            )}
+          </div>
+
+          <div className={`grid grid-cols-2 gap-4 ${testMode ? 'opacity-40 pointer-events-none' : ''}`}>
             <div>
               <label className="font-label-sm text-label-sm text-on-surface-variant mb-2 block">النظام</label>
-              <select value={platform} onChange={(e) => setPlatform(e.target.value as typeof platform)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
+              <select value={platform} onChange={(e) => setPlatform(e.target.value as typeof platform)} disabled={testMode} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
                 <option value="any">الكل</option>
                 <option value="ios">iOS فقط</option>
                 <option value="android">Android فقط</option>
@@ -205,15 +241,16 @@ export default function AdminNotifications() {
                 value={appVersion}
                 onChange={(e) => setAppVersion(e.target.value)}
                 placeholder="مثال: 1.3.1"
+                disabled={testMode}
                 className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid grid-cols-2 gap-4 ${testMode ? 'opacity-40 pointer-events-none' : ''}`}>
             <div>
               <label className="font-label-sm text-label-sm text-on-surface-variant mb-2 block">السجلات</label>
-              <select value={records} onChange={(e) => setRecords(e.target.value as typeof records)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
+              <select value={records} onChange={(e) => setRecords(e.target.value as typeof records)} disabled={testMode} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
                 <option value="any">الكل</option>
                 <option value="has">لديهم سجلات</option>
                 <option value="none">بدون سجلات</option>
@@ -221,7 +258,7 @@ export default function AdminNotifications() {
             </div>
             <div>
               <label className="font-label-sm text-label-sm text-on-surface-variant mb-2 block">النشاط</label>
-              <select value={activity} onChange={(e) => setActivity(e.target.value as typeof activity)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
+              <select value={activity} onChange={(e) => setActivity(e.target.value as typeof activity)} disabled={testMode} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
                 <option value="any">الكل</option>
                 <option value="active">نشط (١٤ يوم)</option>
                 <option value="dormant">غير نشط</option>
@@ -229,7 +266,7 @@ export default function AdminNotifications() {
             </div>
             <div>
               <label className="font-label-sm text-label-sm text-on-surface-variant mb-2 block">الزكاة</label>
-              <select value={zakat} onChange={(e) => setZakat(e.target.value as typeof zakat)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
+              <select value={zakat} onChange={(e) => setZakat(e.target.value as typeof zakat)} disabled={testMode} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
                 <option value="any">الكل</option>
                 <option value="set">مفعّلة</option>
                 <option value="unset">غير مفعّلة</option>
@@ -237,7 +274,7 @@ export default function AdminNotifications() {
             </div>
             <div>
               <label className="font-label-sm text-label-sm text-on-surface-variant mb-2 block">المنطقة</label>
-              <select value={region} onChange={(e) => setRegion(e.target.value as typeof region)} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
+              <select value={region} onChange={(e) => setRegion(e.target.value as typeof region)} disabled={testMode} className="w-full bg-white border border-outline-variant/30 rounded-xl px-3 py-2 text-right">
                 <option value="any">الكل</option>
                 <option value="egypt">مصر</option>
                 <option value="gulf">الخليج</option>
@@ -247,7 +284,7 @@ export default function AdminNotifications() {
 
           <button
             type="submit"
-            disabled={sending || !title.trim() || !body.trim()}
+            disabled={sending || !title.trim() || !body.trim() || (testMode && !testEmail.trim())}
             className="w-full h-14 bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl flex items-center justify-center gap-3 shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
           >
             {sending ? (
