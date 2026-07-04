@@ -27,6 +27,7 @@ interface Campaign {
   status: string;
   resolved_count: number | null;
   sentCount: number;
+  receivedCount: number;
   openedCount: number;
   created_at: string;
   scheduled_for: string;
@@ -383,6 +384,7 @@ export default function AdminNotifications() {
                   <div className="flex gap-4 text-xs text-on-surface-variant">
                     <span>مستهدَف: {c.resolved_count ?? '—'}</span>
                     <span>مُرسَل: {c.sentCount}</span>
+                    <span>مستلَم: {c.receivedCount}</span>
                     <span>مفتوح: {c.openedCount}</span>
                     <span>{new Date(c.created_at).toLocaleString('ar-EG')}</span>
                   </div>
