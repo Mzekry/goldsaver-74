@@ -29,6 +29,7 @@ interface Campaign {
   sentCount: number;
   openedCount: number;
   created_at: string;
+  scheduled_for: string;
   target: string;
 }
 
@@ -76,6 +77,8 @@ export default function AdminNotifications() {
   const [target, setTarget] = useState('/');
   const [testMode, setTestMode] = useState(false);
   const [testEmail, setTestEmail] = useState('');
+  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
+  const [scheduleAt, setScheduleAt] = useState('');
   const [sending, setSending] = useState(false);
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -109,6 +112,7 @@ export default function AdminNotifications() {
     e.preventDefault();
     if (!secret || !title.trim() || !body.trim()) return;
     if (testMode && !testEmail.trim()) return;
+    if (scheduleMode === 'later' && !testMode && !scheduleAt) return;
     setSending(true);
     try {
       const res = await fetch(`${FUNCTIONS_URL}/send-campaign`, {
@@ -118,6 +122,12 @@ export default function AdminNotifications() {
           title: title.trim(),
           body: body.trim(),
           target,
+          // Scheduling is ignored server-side in test mode anyway (a test
+          // send is always meant to confirm things NOW), so only send it
+          // when relevant.
+          ...(scheduleMode === 'later' && !testMode && scheduleAt
+            ? { scheduleFor: new Date(scheduleAt).toISOString() }
+            : {}),
           // Test mode bypasses platform/version/segment filters entirely on
           // the backend, so there's no point sending them along.
           ...(testMode
@@ -140,13 +150,16 @@ export default function AdminNotifications() {
         return;
       }
       toast({
-        title: 'تم الإرسال',
-        description: testMode
+        title: json.scheduled ? 'تمت الجدولة' : 'تم الإرسال',
+        description: json.scheduled
+          ? `ستُرسَل في ${new Date(json.scheduledFor).toLocaleString('ar-EG')}`
+          : testMode
           ? `تم الإرسال إلى ${testEmail.trim()} فقط`
           : `تم استهداف ${json.resolvedCount} مستخدم`,
       });
       setTitle('');
       setBody('');
+      setScheduleAt('');
       loadCampaigns(secret);
     } catch {
       toast({ title: 'فشل الإرسال', description: 'تعذّر الاتصال بالخادم', variant: 'destructive' });
@@ -199,6 +212,41 @@ export default function AdminNotifications() {
             >
               {TARGETS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
+          </div>
+
+          <div className={testMode ? 'opacity-40 pointer-events-none' : ''}>
+            <label className="font-label-md text-label-md text-on-surface-variant mb-2 block">التوقيت</label>
+            <div className="flex gap-3 mb-3">
+              <button
+                type="button"
+                onClick={() => setScheduleMode('now')}
+                disabled={testMode}
+                className={`flex-1 py-2 rounded-xl border-2 font-label-sm text-label-sm transition-all ${
+                  scheduleMode === 'now' ? 'border-primary bg-primary-container/10 text-primary font-semibold' : 'border-outline-variant/30 text-on-surface-variant'
+                }`}
+              >
+                الآن
+              </button>
+              <button
+                type="button"
+                onClick={() => setScheduleMode('later')}
+                disabled={testMode}
+                className={`flex-1 py-2 rounded-xl border-2 font-label-sm text-label-sm transition-all ${
+                  scheduleMode === 'later' ? 'border-primary bg-primary-container/10 text-primary font-semibold' : 'border-outline-variant/30 text-on-surface-variant'
+                }`}
+              >
+                جدولة لوقت لاحق
+              </button>
+            </div>
+            {scheduleMode === 'later' && (
+              <input
+                type="datetime-local"
+                value={scheduleAt}
+                onChange={(e) => setScheduleAt(e.target.value)}
+                required={scheduleMode === 'later' && !testMode}
+                className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-3 text-right focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
+              />
+            )}
           </div>
 
           <div className="rounded-xl border border-primary/30 bg-primary-container/5 p-4">
@@ -284,13 +332,22 @@ export default function AdminNotifications() {
 
           <button
             type="submit"
-            disabled={sending || !title.trim() || !body.trim() || (testMode && !testEmail.trim())}
+            disabled={
+              sending || !title.trim() || !body.trim() ||
+              (testMode && !testEmail.trim()) ||
+              (scheduleMode === 'later' && !testMode && !scheduleAt)
+            }
             className="w-full h-14 bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl flex items-center justify-center gap-3 shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
           >
             {sending ? (
               <>
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                جاري الإرسال...
+                {scheduleMode === 'later' && !testMode ? 'جاري الجدولة...' : 'جاري الإرسال...'}
+              </>
+            ) : scheduleMode === 'later' && !testMode ? (
+              <>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>schedule_send</span>
+                جدولة
               </>
             ) : (
               <>
@@ -318,6 +375,11 @@ export default function AdminNotifications() {
                     </span>
                   </div>
                   <p className="font-body-md text-body-md text-on-surface-variant mb-2">{c.body}</p>
+                  {c.status === 'pending' && (
+                    <p className="font-label-sm text-label-sm text-primary mb-2">
+                      مجدولة لـ {new Date(c.scheduled_for).toLocaleString('ar-EG')}
+                    </p>
+                  )}
                   <div className="flex gap-4 text-xs text-on-surface-variant">
                     <span>مستهدَف: {c.resolved_count ?? '—'}</span>
                     <span>مُرسَل: {c.sentCount}</span>
