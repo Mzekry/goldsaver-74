@@ -113,7 +113,7 @@ export default function AdminNotifications() {
     e.preventDefault();
     if (!secret || !title.trim() || !body.trim()) return;
     if (testMode && !testEmail.trim()) return;
-    if (scheduleMode === 'later' && !testMode && !scheduleAt) return;
+    if (scheduleMode === 'later' && !scheduleAt) return;
     setSending(true);
     try {
       const res = await fetch(`${FUNCTIONS_URL}/send-campaign`, {
@@ -123,10 +123,9 @@ export default function AdminNotifications() {
           title: title.trim(),
           body: body.trim(),
           target,
-          // Scheduling is ignored server-side in test mode anyway (a test
-          // send is always meant to confirm things NOW), so only send it
-          // when relevant.
-          ...(scheduleMode === 'later' && !testMode && scheduleAt
+          // Test mode can combine with scheduling — e.g. "does a scheduled
+          // send actually fire later" tested safely on just one account.
+          ...(scheduleMode === 'later' && scheduleAt
             ? { scheduleFor: new Date(scheduleAt).toISOString() }
             : {}),
           // Test mode bypasses platform/version/segment filters entirely on
@@ -153,7 +152,7 @@ export default function AdminNotifications() {
       toast({
         title: json.scheduled ? 'تمت الجدولة' : 'تم الإرسال',
         description: json.scheduled
-          ? `ستُرسَل في ${new Date(json.scheduledFor).toLocaleString('ar-EG')}`
+          ? `ستُرسَل${testMode ? ` إلى ${testEmail.trim()} فقط` : ''} في ${new Date(json.scheduledFor).toLocaleString('ar-EG')}`
           : testMode
           ? `تم الإرسال إلى ${testEmail.trim()} فقط`
           : `تم استهداف ${json.resolvedCount} مستخدم`,
@@ -215,13 +214,12 @@ export default function AdminNotifications() {
             </select>
           </div>
 
-          <div className={testMode ? 'opacity-40 pointer-events-none' : ''}>
+          <div>
             <label className="font-label-md text-label-md text-on-surface-variant mb-2 block">التوقيت</label>
             <div className="flex gap-3 mb-3">
               <button
                 type="button"
                 onClick={() => setScheduleMode('now')}
-                disabled={testMode}
                 className={`flex-1 py-2 rounded-xl border-2 font-label-sm text-label-sm transition-all ${
                   scheduleMode === 'now' ? 'border-primary bg-primary-container/10 text-primary font-semibold' : 'border-outline-variant/30 text-on-surface-variant'
                 }`}
@@ -231,7 +229,6 @@ export default function AdminNotifications() {
               <button
                 type="button"
                 onClick={() => setScheduleMode('later')}
-                disabled={testMode}
                 className={`flex-1 py-2 rounded-xl border-2 font-label-sm text-label-sm transition-all ${
                   scheduleMode === 'later' ? 'border-primary bg-primary-container/10 text-primary font-semibold' : 'border-outline-variant/30 text-on-surface-variant'
                 }`}
@@ -244,7 +241,7 @@ export default function AdminNotifications() {
                 type="datetime-local"
                 value={scheduleAt}
                 onChange={(e) => setScheduleAt(e.target.value)}
-                required={scheduleMode === 'later' && !testMode}
+                required={scheduleMode === 'later'}
                 className="w-full bg-white border border-outline-variant/30 rounded-xl px-4 py-3 text-right focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none"
               />
             )}
@@ -336,16 +333,16 @@ export default function AdminNotifications() {
             disabled={
               sending || !title.trim() || !body.trim() ||
               (testMode && !testEmail.trim()) ||
-              (scheduleMode === 'later' && !testMode && !scheduleAt)
+              (scheduleMode === 'later' && !scheduleAt)
             }
             className="w-full h-14 bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl flex items-center justify-center gap-3 shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
           >
             {sending ? (
               <>
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                {scheduleMode === 'later' && !testMode ? 'جاري الجدولة...' : 'جاري الإرسال...'}
+                {scheduleMode === 'later' ? 'جاري الجدولة...' : 'جاري الإرسال...'}
               </>
-            ) : scheduleMode === 'later' && !testMode ? (
+            ) : scheduleMode === 'later' ? (
               <>
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>schedule_send</span>
                 جدولة
